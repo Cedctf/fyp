@@ -3,14 +3,11 @@ import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-
-// TODO: Replace these with actual database queries
-// This is a mock database - replace with your actual database
-const users = [];
+import { getUsersCollection } from "@/lib/mongodb";
 
 async function getUserByEmail(email) {
-  // TODO: Replace with actual database query
-  return users.find(user => user.email === email);
+  const usersCollection = await getUsersCollection();
+  return await usersCollection.findOne({ email: email.toLowerCase() });
 }
 
 export const authOptions = {
@@ -36,13 +33,14 @@ export const authOptions = {
           throw new Error("Invalid credentials");
         }
 
-        // TODO: Replace with actual database lookup
+        // Get user from MongoDB
         const user = await getUserByEmail(credentials.email);
         
         if (!user || !user.password) {
           throw new Error("Invalid credentials");
         }
 
+        // Compare password with hashed password in database
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           user.password
@@ -53,7 +51,7 @@ export const authOptions = {
         }
 
         return {
-          id: user.id,
+          id: user._id.toString(),
           email: user.email,
           name: user.name,
         };
@@ -105,19 +103,33 @@ export const authOptions = {
     async signIn({ user, account, profile }) {
       // Handle OAuth sign-in
       if (account?.provider === "google" || account?.provider === "github") {
-        // TODO: Save OAuth user to database if not exists
-        // Check if user exists, if not create one
-        const existingUser = await getUserByEmail(user.email);
-        
-        if (!existingUser) {
-          // TODO: Create user in database
-          users.push({
-            id: `${Date.now()}`,
-            email: user.email,
-            name: user.name || user.email.split('@')[0],
-            image: user.image,
-            provider: account.provider,
-          });
+        try {
+          // Check if user exists in MongoDB
+          const existingUser = await getUserByEmail(user.email);
+          
+          if (!existingUser) {
+            // Create new OAuth user in MongoDB
+            const usersCollection = await getUsersCollection();
+            await usersCollection.insertOne({
+              email: user.email.toLowerCase(),
+              name: user.name || user.email.split('@')[0],
+              image: user.image,
+              provider: account.provider,
+              providerId: account.providerAccountId,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+          } else {
+            // Update last login time
+            const usersCollection = await getUsersCollection();
+            await usersCollection.updateOne(
+              { email: user.email.toLowerCase() },
+              { $set: { updatedAt: new Date() } }
+            );
+          }
+        } catch (error) {
+          console.error('Error saving OAuth user:', error);
+          return false;
         }
       }
       

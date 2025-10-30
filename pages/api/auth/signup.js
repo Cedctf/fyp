@@ -1,12 +1,5 @@
 import bcrypt from "bcryptjs";
-
-// TODO: Replace with actual database
-// This is a mock database - replace with your actual database
-const users = [];
-
-function getUserByEmail(email) {
-  return users.find(user => user.email === email);
-}
+import { getUsersCollection } from "@/lib/mongodb";
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -35,8 +28,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // TODO: Check if user already exists in your database
-    const existingUser = getUserByEmail(email);
+    // Connect to MongoDB
+    const usersCollection = await getUsersCollection();
+
+    // Check if user already exists in database
+    const existingUser = await usersCollection.findOne({ 
+      email: email.toLowerCase() 
+    });
     
     if (existingUser) {
       return res.status(400).json({ 
@@ -47,23 +45,24 @@ export default async function handler(req, res) {
     // Hash password with bcrypt
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // TODO: Save user to your database
-    // For now, using mock database
+    // Create user document
     const newUser = {
-      id: `${Date.now()}`,
       email: email.toLowerCase(),
       password: hashedPassword,
       name: name.trim(),
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      provider: 'credentials',
     };
 
-    users.push(newUser);
+    // Save user to MongoDB
+    const result = await usersCollection.insertOne(newUser);
 
     // Return success (don't send password back)
     res.status(201).json({ 
       message: 'Account created successfully',
       user: {
-        id: newUser.id,
+        id: result.insertedId.toString(),
         email: newUser.email,
         name: newUser.name,
       }
