@@ -1,40 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# FYP Authentication & API System
 
-## Getting Started
+This project implements a secure authentication system and a public API using Next.js, NextAuth.js, and MongoDB.
 
-First, run the development server:
+## 1. Authentication System
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The authentication flow handles user sign-up, login, and session management.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### **Core Components**
+- **Configuration**: [`pages/api/auth/[...nextauth].js`](pages/api/auth/[...nextauth].js)
+  - Configures **NextAuth.js** providers (Google, GitHub, Credentials).
+  - Defines the **JWT Strategy** for sessions.
+  - Customizes callbacks to sync MongoDB User IDs with the session.
+- **Database Connection**: [`lib/mongodb.js`](lib/mongodb.js)
+  - Manages the connection pool to MongoDB.
+  - Exports `clientPromise` for NextAuth and helper functions (`getDatabase`, `getUsersCollection`) for the app.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+### **How it Works**
+1.  **Sign Up**: Users sign up via OAuth or Email/Password.
+    -   OAuth users are automatically created in the DB during the `signIn` callback.
+    -   Email users are created via the custom sign-up API (if implemented).
+2.  **Session**:
+    -   On login, a **JWT (JSON Web Token)** is created.
+    -   The `jwt` callback fetches the user's `_id` from MongoDB.
+    -   The `session` callback exposes this `user.id` to the frontend.
+3.  **Protection**:
+    -   **Frontend**: `useSession()` hook checks for active sessions.
+    -   **Backend**: `getServerSession()` verifies tokens on API routes.
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+---
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## 2. API Key System
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The system allows users to generate API keys to access public data programmatically.
 
-## Learn More
+### **Architecture**
+- **Key Logic**: [`lib/api-keys.js`](lib/api-keys.js)
+  - **Generation**: Uses `crypto.randomBytes(32)` to create a secure random string.
+  - **Hashing**: Uses **SHA-256** to hash keys before storage.
+  - **Storage**: Keys are stored in the `api_keys` collection.
+- **Management UI**: [`components/ApiKeyManager.js`](components/ApiKeyManager.js)
+  - Allows users to generate, view (once), and revoke keys.
 
-To learn more about Next.js, take a look at the following resources:
+### **Security Model**
+1.  **Raw Key**: `fyp_sk_...` (32 bytes of entropy).
+    -   **Never Stored**: The raw key is returned to the user **only once** upon generation.
+    -   **Verification**: The server hashes the incoming key and compares it to the stored hash.
+2.  **Stored Hash**: `SHA256(Raw Key)`.
+    -   Stored in the database. Even if the DB is leaked, original keys cannot be recovered.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 3. Public API
 
-## Deploy on Vercel
+External developers can access data using their API keys.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### **Endpoints**
+- **Data Endpoint**: [`pages/api/v1/data.js`](pages/api/v1/data.js)
+  - **Method**: `GET`
+  - **Headers**: `x-api-key: <YOUR_KEY>`
+  - **Response**: Returns JSON data (Gaming Stats, Staking Portfolio).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+### **Request Flow**
+1.  **Client** sends request: `curl -H "x-api-key: fyp_sk_..." https://.../api/v1/data`
+2.  **Middleware** (`pages/api/v1/data.js`):
+    -   Extracts `x-api-key` header.
+    -   Calls `validateApiKey(key)` from `lib/api-keys.js`.
+3.  **Validation**:
+    -   Hashes the incoming key.
+    -   Finds matching hash in `api_keys` collection.
+    -   Updates `lastUsed` timestamp.
+4.  **Response**:
+    -   If valid: Returns 200 OK with data.
+    -   If invalid: Returns 403 Forbidden.
+
+---
+
+## 4. File Structure Overview
+
+| Path | Description |
+| :--- | :--- |
+| **`pages/api/auth/[...nextauth].js`** | Main Auth configuration (Providers, Callbacks). |
+| **`lib/mongodb.js`** | MongoDB connection and helpers. |
+| **`lib/api-keys.js`** | Core logic for key generation, hashing, and validation. |
+| **`components/ApiKeyManager.js`** | UI component for managing keys. |
+| **`pages/protected.js`** | User dashboard (Protected Page). |
+| **`pages/api/v1/data.js`** | Public API endpoint example. |

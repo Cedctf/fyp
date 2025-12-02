@@ -35,7 +35,7 @@ export const authOptions = {
 
         // Get user from MongoDB
         const user = await getUserByEmail(credentials.email);
-        
+
         if (!user || !user.password) {
           throw new Error("Invalid credentials");
         }
@@ -58,36 +58,46 @@ export const authOptions = {
       }
     })
   ],
-  
+
   // Configure JWT
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  
+
   jwt: {
     secret: process.env.NEXTAUTH_SECRET || "your-super-secret-key-change-this",
   },
-  
+
   // Callbacks for customizing JWT and session
   callbacks: {
     async jwt({ token, user, account, profile }) {
       // Persist user data to the token after sign in
       if (user) {
-        token.id = user.id;
         token.email = user.email;
         token.name = user.name;
+
+        // For OAuth, fetch the user from DB to get the correct _id
+        if (account && (account.provider === "google" || account.provider === "github")) {
+          const dbUser = await getUserByEmail(user.email);
+          if (dbUser) {
+            token.id = dbUser._id.toString();
+          }
+        } else {
+          // For credentials, user.id is already set correctly in authorize
+          token.id = user.id;
+        }
       }
-      
+
       // Persist OAuth access token
       if (account) {
         token.accessToken = account.access_token;
         token.provider = account.provider;
       }
-      
+
       return token;
     },
-    
+
     async session({ session, token }) {
       // Add custom user info to session
       if (token) {
@@ -96,17 +106,17 @@ export const authOptions = {
         session.user.name = token.name;
         session.accessToken = token.accessToken;
       }
-      
+
       return session;
     },
-    
+
     async signIn({ user, account, profile }) {
       // Handle OAuth sign-in
       if (account?.provider === "google" || account?.provider === "github") {
         try {
           // Check if user exists in MongoDB
           const existingUser = await getUserByEmail(user.email);
-          
+
           if (!existingUser) {
             // Create new OAuth user in MongoDB
             const usersCollection = await getUsersCollection();
@@ -132,18 +142,18 @@ export const authOptions = {
           return false;
         }
       }
-      
+
       return true;
     },
   },
-  
+
   // Custom pages
   pages: {
     signIn: '/auth/signin',
     error: '/auth/error',
     // signOut: '/auth/signout',
   },
-  
+
   // Enable debug messages in development
   debug: process.env.NODE_ENV === 'development',
 };
