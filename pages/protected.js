@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+
 /**
  * Example of a protected page
  * This page can only be accessed by authenticated users
@@ -13,6 +14,8 @@ export default function ProtectedPage() {
   const [apiData, setApiData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+
 
   // Redirect to sign in if not authenticated
   useEffect(() => {
@@ -122,6 +125,26 @@ export default function ProtectedPage() {
                   {session.user.name || "Not provided"}
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* API Dashboard Link */}
+          <div className="rounded-2xl bg-gradient-to-r from-gray-900 to-gray-800 p-8 shadow-lg text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">
+                  Developer API
+                </h2>
+                <p className="text-gray-300 mb-0">
+                  Want to access our data programmatically? Manage your API keys and test endpoints.
+                </p>
+              </div>
+              <Link
+                href="/api-dashboard"
+                className="bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              >
+                Go to API Dashboard →
+              </Link>
             </div>
           </div>
 
