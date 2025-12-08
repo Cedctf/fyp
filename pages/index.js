@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -15,6 +17,13 @@ const geistMono = Geist_Mono({
 
 export default function Home() {
   const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session?.user && (!session.user.address || !session.user.phone)) {
+      router.push("/auth/complete-profile");
+    }
+  }, [session, router]);
 
   return (
     <div
@@ -25,16 +34,16 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
-        <Image
-          src="/next.svg"
+              <Image
+                src="/next.svg"
                 alt="Logo"
                 width={80}
                 height={16}
-          priority
+                priority
                 className="dark:invert"
               />
             </div>
-            
+
             <div className="flex items-center gap-4">
               {status === "loading" ? (
                 <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-200"></div>
@@ -131,7 +140,7 @@ export default function Home() {
                     Authentication Successful!
                   </h2>
                 </div>
-                
+
                 <div className="space-y-3 text-left">
                   <div className="rounded-lg bg-gray-50 p-4">
                     <p className="text-sm font-medium text-gray-500">User ID</p>

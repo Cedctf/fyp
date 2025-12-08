@@ -11,20 +11,20 @@ export default async function handler(req, res) {
 
     // Validate input
     if (!email || !email.includes('@')) {
-      return res.status(400).json({ 
-        message: 'Please provide a valid email address' 
+      return res.status(400).json({
+        message: 'Please provide a valid email address'
       });
     }
 
     if (!password || password.length < 8) {
-      return res.status(400).json({ 
-        message: 'Password must be at least 8 characters long' 
+      return res.status(400).json({
+        message: 'Password must be at least 8 characters long'
       });
     }
 
     if (!name || name.trim().length === 0) {
-      return res.status(400).json({ 
-        message: 'Please provide your name' 
+      return res.status(400).json({
+        message: 'Please provide your name'
       });
     }
 
@@ -32,13 +32,13 @@ export default async function handler(req, res) {
     const usersCollection = await getUsersCollection();
 
     // Check if user already exists in database
-    const existingUser = await usersCollection.findOne({ 
-      email: email.toLowerCase() 
+    const existingUser = await usersCollection.findOne({
+      email: email.toLowerCase()
     });
-    
+
     if (existingUser) {
-      return res.status(400).json({ 
-        message: 'An account with this email already exists' 
+      return res.status(400).json({
+        message: 'An account with this email already exists'
       });
     }
 
@@ -50,6 +50,8 @@ export default async function handler(req, res) {
       email: email.toLowerCase(),
       password: hashedPassword,
       name: name.trim(),
+      address: req.body.address || "",
+      phone: req.body.phone || "",
       createdAt: new Date(),
       updatedAt: new Date(),
       provider: 'credentials',
@@ -59,7 +61,7 @@ export default async function handler(req, res) {
     const result = await usersCollection.insertOne(newUser);
 
     // Return success (don't send password back)
-    res.status(201).json({ 
+    res.status(201).json({
       message: 'Account created successfully',
       user: {
         id: result.insertedId.toString(),
@@ -69,8 +71,8 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error('Signup error:', error);
-    res.status(500).json({ 
-      message: 'Something went wrong. Please try again.' 
+    res.status(500).json({
+      message: 'Something went wrong. Please try again.'
     });
   }
 }
