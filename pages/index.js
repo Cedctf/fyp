@@ -46,7 +46,7 @@ export default function Home() {
               VIEW DENGUE TRENDS
             </button>
             <button className="px-8 py-3 bg-white text-black rounded-full hover:bg-gray-200 transition-all duration-300 tracking-widest text-sm font-medium">
-              OPEN DASHBOARD
+              OPEN API DASHBOARD
             </button>
           </div>
         </div>
