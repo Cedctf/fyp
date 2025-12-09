@@ -3,8 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Navbar from '../../components/Navbar';
-import SearchBar from '../../components/visionos/SearchBar';
-import { Calendar, Clock, ArrowRight, BookOpen } from 'lucide-react';
+import { Calendar, Clock, ArrowRight, BookOpen, Search } from 'lucide-react';
 import { ARTICLES } from '../../data/articles';
 
 const CATEGORIES = ["All", "prevention", "symptoms", "education", "tech & innovation", "community"];
@@ -12,6 +11,7 @@ const CATEGORIES = ["All", "prevention", "symptoms", "education", "tech & innova
 export default function EducationPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
+    const [sortBy, setSortBy] = useState("newest"); // newest, oldest, readTimeAsc, readTimeDesc
 
     // Filter Logic
     const filteredArticles = ARTICLES.filter(article => {
@@ -19,9 +19,24 @@ export default function EducationPage() {
             article.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = selectedCategory === "All" || article.category.toLowerCase() === selectedCategory.toLowerCase();
         return matchesSearch && matchesCategory;
+    }).sort((a, b) => {
+        if (sortBy === 'newest') {
+            return new Date(b.date) - new Date(a.date);
+        } else if (sortBy === 'oldest') {
+            return new Date(a.date) - new Date(b.date);
+        } else if (sortBy === 'readTimeAsc') {
+            return parseInt(a.readTime) - parseInt(b.readTime);
+        } else if (sortBy === 'readTimeDesc') {
+            return parseInt(b.readTime) - parseInt(a.readTime);
+        }
+        return 0;
     });
 
     const featuredArticle = ARTICLES.find(a => a.featured);
+    // Be careful not to filter out the featured article from the *list* if it matches the search/filter criteria, 
+    // but the original design separated them. 
+    // The original logic was: otherArticles = filteredArticles.filter(a => a.id !== featuredArticle?.id);
+    // Let's keep that to avoid duplication if the featured article is also in the list.
     const otherArticles = filteredArticles.filter(a => a.id !== featuredArticle?.id);
 
     return (
@@ -49,36 +64,64 @@ export default function EducationPage() {
                 </section>
 
                 {/* Search & Filter Section */}
-                <section className="mb-12 max-w-4xl mx-auto space-y-6">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <SearchBar value={searchQuery} onChange={setSearchQuery} />
-                    </motion.div>
+                <section className="mb-20 pt-10 border-t border-[rgb(27,55,121)]/10">
+                    <div className="flex flex-col md:flex-row items-end justify-between gap-8 md:gap-16">
+                        {/* Search Input */}
+                        <div className="flex-1 w-full md:max-w-md relative group">
+                            <div className="relative flex items-center border-b border-[rgb(27,55,121)]/20 py-2 group-focus-within:border-[rgb(27,55,121)] transition-colors">
+                                <span className="text-[rgb(27,55,121)] font-sans mr-4">Search</span>
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-transparent text-[rgb(27,55,121)] text-lg font-serif placeholder-[rgb(27,55,121)]/30 focus:outline-none"
+                                />
+                                <Search className="w-5 h-5 text-[rgb(27,55,121)]" />
+                            </div>
+                        </div>
 
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                        className="flex flex-wrap justify-center gap-2"
-                    >
-                        {CATEGORIES.map((cat) => (
-                            <button
-                                key={cat}
-                                onClick={() => setSelectedCategory(cat)}
-                                className={`
-                  px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 font-sans
-                  ${selectedCategory === cat
-                                        ? 'bg-[rgb(87,17,17)] text-white shadow-lg'
-                                        : 'bg-[rgb(242,240,235)] text-[rgb(27,55,121)] hover:bg-[rgb(27,55,121)] hover:text-white'}
-                `}
-                            >
-                                {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                            </button>
-                        ))}
-                    </motion.div>
+                        {/* Controls */}
+                        <div className="flex items-center gap-12 w-full md:w-auto justify-between md:justify-end">
+                            {/* Sort By */}
+                            <div className="flex items-center gap-4 relative group">
+                                <span className="text-sm font-sans text-[rgb(27,55,121)]">Sort by</span>
+                                <div className="relative">
+                                    <select
+                                        value={sortBy}
+                                        onChange={(e) => setSortBy(e.target.value)}
+                                        className="appearance-none bg-transparent text-sm font-sans font-medium text-[rgb(27,55,121)] pr-8 py-1 focus:outline-none cursor-pointer border-b border-transparent hover:border-[rgb(27,55,121)]/30 transition-colors"
+                                    >
+                                        <option value="newest">Newest First</option>
+                                        <option value="oldest">Oldest First</option>
+                                        <option value="readTimeAsc">Reading Time (Shortest)</option>
+                                        <option value="readTimeDesc">Reading Time (Longest)</option>
+                                    </select>
+                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none">
+                                        <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-[rgb(27,55,121)]"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Filter */}
+                            <div className="flex items-center gap-4 relative group">
+                                <span className="text-sm font-sans text-[rgb(27,55,121)]">Filter</span>
+                                <div className="relative">
+                                    <select
+                                        value={selectedCategory}
+                                        onChange={(e) => setSelectedCategory(e.target.value)}
+                                        className="appearance-none bg-transparent text-sm font-sans font-medium text-[rgb(27,55,121)] pr-8 py-1 focus:outline-none cursor-pointer border-b border-transparent hover:border-[rgb(27,55,121)]/30 transition-colors"
+                                    >
+                                        {CATEGORIES.map(cat => (
+                                            <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none">
+                                        <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-[rgb(27,55,121)]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
                 {/* Featured Article */}
