@@ -8,8 +8,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
   --font-mono: var(--font-geist-mono);
+
+  /* Brand Colors */
+  --color-brand-blue: rgb(27, 55, 121);
+  --color-brand-red: rgb(87, 17, 17);
+  --color-brand-beige: rgb(242, 240, 235);
 }
 
 @media (prefers-color-scheme: dark) {
