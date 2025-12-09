@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint"
   },
+  "resolutions": {
+    "styled-components": "^6.1.19"
+  },
   "dependencies": {
     "@deck.gl/aggregation-layers": "^8.9.36",
     "@deck.gl/core": "^8.9.36",

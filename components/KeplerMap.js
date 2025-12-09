@@ -19,6 +19,7 @@ export default function KeplerMap() {
                 width={1920} // These will be responsive in a real app, typically handled by AutoSizer
                 height={1080}
                 mapboxApiAccessToken={process.env.NEXT_PUBLIC_MAPBOX_API_TOKEN}
+                theme="light"
             />
         </div>
     );
