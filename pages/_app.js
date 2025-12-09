@@ -9,7 +9,16 @@ const inter = Inter({
 });
 
 const playfair = localFont({
-  src: "../public/fonts/PlayfairDisplay-VariableFont_wght.ttf",
+  src: [
+    {
+      path: "../public/fonts/PlayfairDisplay-VariableFont_wght.ttf",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/PlayfairDisplay-Italic-VariableFont_wght.ttf",
+      style: "italic",
+    },
+  ],
   variable: "--font-playfair",
 });
 

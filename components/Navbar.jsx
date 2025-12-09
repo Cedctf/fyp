@@ -62,7 +62,10 @@ const Navbar = () => {
             <div className="container mx-auto px-4">
                 <div className="flex h-20 items-center justify-between">
                     {/* Logo (Top Left) */}
-                    <Link href="/" className="text-2xl font-bold text-[rgb(27,55,121)] font-serif tracking-tight z-50 relative">
+                    <Link
+                        href="/"
+                        className={`text-2xl font-bold font-serif tracking-tight z-50 relative ${(isOpen || router.pathname !== '/') ? 'text-[rgb(27,55,121)]' : 'text-white'}`}
+                    >
                         DOPEWS-MY
                     </Link>
 
@@ -70,7 +73,7 @@ const Navbar = () => {
                     <button
                         onClick={() => setIsOpen(!isOpen)}
                         className="z-50 relative p-2 rounded-full transition-colors hover:bg-black/5"
-                        style={{ color: isOpen ? 'black' : 'rgb(27,55,121)' }}
+                        style={{ color: (isOpen || router.pathname !== '/') ? 'rgb(27,55,121)' : 'white' }}
                     >
                         <AnimatePresence mode="wait">
                             {isOpen ? (
