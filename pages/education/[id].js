@@ -74,10 +74,27 @@ export default function ArticlePage() {
                         className="relative w-full aspect-video md:aspect-[21/9] rounded-2xl overflow-hidden shadow-2xl mb-16"
                     >
                         {article.image ? (
-                            <>
-                                <img src={article.image} alt={article.title} className="absolute inset-0 w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                            </>
+                            <div className="relative w-full h-full flex items-center justify-center bg-gray-50 overflow-hidden">
+                                {/* Blurred Background */}
+                                <div className="absolute inset-0">
+                                    <img src={article.image} alt="" className="w-full h-full object-cover blur-3xl opacity-50 scale-110" />
+                                    <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                                </div>
+
+                                {/* Main Image - Book Style */}
+                                <motion.div
+                                    className="relative z-10 h-[85%] aspect-[3/4] rounded-r-lg rounded-l-sm shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)]"
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ delay: 0.2, duration: 0.5 }}
+                                >
+                                    <img src={article.image} alt={article.title} className="w-full h-full object-cover rounded-r-lg rounded-l-sm" />
+                                    {/* Spine effect */}
+                                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-black/20 to-transparent z-20 rounded-l-sm"></div>
+                                    {/* Gloss effect */}
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-40 rounded-r-lg pointer-events-none"></div>
+                                </motion.div>
+                            </div>
                         ) : (
                             <div className={`absolute inset-0 bg-gradient-to-br ${article.imageGradient} flex items-center justify-center`}>
                                 <span className="text-white/20 text-4xl font-bold tracking-widest uppercase">Dengue Control</span>

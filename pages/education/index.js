@@ -178,76 +178,81 @@ export default function EducationPage() {
 
                     <div className="space-y-12">
                         {otherArticles.map((article, index) => (
-                            <Link href={`/education/${article.id}`} key={article.id}>
-                                <motion.div
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    className="group grid grid-cols-1 md:grid-cols-12 gap-8 items-start border-b border-[rgb(27,55,121)]/5 pb-12 last:border-0 cursor-pointer"
-                                >
-                                    {/* Date - Left Column */}
-                                    <div className="md:col-span-2 text-[rgb(27,55,121)] font-mono text-lg pt-2 opacity-60">
-                                        {article.date}
-                                    </div>
+                            <div key={article.id} className="relative">
+                                <Link href={`/education/${article.id}`}>
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 30 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.1 }}
+                                        className="group grid grid-cols-1 md:grid-cols-12 gap-8 items-start cursor-pointer"
+                                    >
+                                        {/* Date - Left Column */}
+                                        <div className="md:col-span-2 text-[rgb(27,55,121)] font-mono text-lg pt-2 opacity-60">
+                                            {article.date}
+                                        </div>
 
-                                    {/* Book Cover - Middle Column */}
-                                    <div className="md:col-span-3">
-                                        <div className="relative aspect-[3/4] w-full max-w-[200px] mx-auto md:mx-0 rounded-r-lg rounded-l-sm bg-white transition-all duration-500 group-hover:-translate-y-2 cursor-pointer"
-                                            style={{ boxShadow: "20px 20px 40px -5px rgba(0,0,0,0.6)" }}
-                                        >
-                                            {/* Spine effect */}
-                                            <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-black/20 to-transparent z-10 rounded-l-sm"></div>
+                                        {/* Book Cover - Middle Column */}
+                                        <div className="md:col-span-3">
+                                            <div className="relative aspect-[3/4] w-full max-w-[200px] mx-auto md:mx-0 rounded-r-lg rounded-l-sm bg-white transition-all duration-500 group-hover:-translate-y-2 cursor-pointer"
+                                                style={{ boxShadow: "20px 20px 40px -5px rgba(0,0,0,0.6)" }}
+                                            >
+                                                {/* Spine effect */}
+                                                <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-black/20 to-transparent z-10 rounded-l-sm"></div>
 
-                                            {/* Cover Art */}
-                                            <div className={`absolute inset-0 bg-gradient-to-br ${article.image ? '' : (article.imageGradient || 'from-slate-200 to-slate-300')} rounded-r-lg rounded-l-sm flex items-center justify-center p-4 text-center overflow-hidden`}>
-                                                {article.image ? (
-                                                    <>
-                                                        <img
-                                                            src={article.image}
-                                                            alt={article.title}
-                                                            className="absolute inset-0 w-full h-full object-cover rounded-r-lg rounded-l-sm"
-                                                        />
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-r-lg rounded-l-sm"></div>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-multiply"></div>
-                                                        <span className="text-[rgb(27,55,121)]/20 font-bold text-xs tracking-widest uppercase rotate-90 absolute right-2 bottom-4 origin-bottom-right font-sans">
-                                                            Dengue Mission
-                                                        </span>
-                                                        <h4 className="text-[rgb(27,55,121)] font-serif italic text-xl leading-tight opacity-40">
-                                                            {article.title}
-                                                        </h4>
-                                                    </>
-                                                )}
+                                                {/* Cover Art */}
+                                                <div className={`absolute inset-0 bg-gradient-to-br ${article.image ? '' : (article.imageGradient || 'from-slate-200 to-slate-300')} rounded-r-lg rounded-l-sm flex items-center justify-center p-4 text-center overflow-hidden`}>
+                                                    {article.image ? (
+                                                        <>
+                                                            <img
+                                                                src={article.image}
+                                                                alt={article.title}
+                                                                className="absolute inset-0 w-full h-full object-cover rounded-r-lg rounded-l-sm"
+                                                            />
+                                                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-r-lg rounded-l-sm"></div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-multiply"></div>
+                                                            <span className="text-[rgb(27,55,121)]/20 font-bold text-xs tracking-widest uppercase rotate-90 absolute right-2 bottom-4 origin-bottom-right font-sans">
+                                                                Dengue Mission
+                                                            </span>
+                                                            <h4 className="text-[rgb(27,55,121)] font-serif italic text-xl leading-tight opacity-40">
+                                                                {article.title}
+                                                            </h4>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Content - Right Column */}
-                                    <div className="md:col-span-7 flex flex-col items-start gap-4">
-                                        <div className="flex justify-between w-full items-start">
-                                            <h3 className="text-3xl font-bold text-[rgb(27,55,121)] group-hover:text-[rgb(87,17,17)] transition-colors cursor-pointer leading-tight font-serif text-justify">
-                                                {article.title}
-                                            </h3>
-                                            <ArrowRight className="w-6 h-6 text-[rgb(27,55,121)] -rotate-45 group-hover:rotate-0 transition-transform duration-300 flex-shrink-0 ml-4" />
+                                        {/* Content - Right Column */}
+                                        <div className="md:col-span-7 flex flex-col items-start gap-4">
+                                            <div className="flex justify-between w-full items-start">
+                                                <h3 className="text-3xl font-bold text-[rgb(27,55,121)] group-hover:text-[rgb(87,17,17)] transition-colors cursor-pointer leading-tight font-serif text-justify">
+                                                    {article.title}
+                                                </h3>
+                                                <ArrowRight className="w-6 h-6 text-[rgb(27,55,121)] -rotate-45 group-hover:rotate-0 transition-transform duration-300 flex-shrink-0 ml-4" />
+                                            </div>
+
+                                            <p className="text-lg text-[rgb(27,55,121)]/70 leading-relaxed max-w-2xl font-sans text-justify">
+                                                {article.excerpt}
+                                            </p>
+
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                <span className="px-3 py-1 rounded-full border border-[rgb(27,55,121)]/20 text-[rgb(27,55,121)]/60 text-xs font-semibold uppercase tracking-wider font-sans">
+                                                    {article.category}
+                                                </span>
+                                                <span className="px-3 py-1 rounded-full border border-[rgb(27,55,121)]/20 text-[rgb(27,55,121)]/60 text-xs font-semibold uppercase tracking-wider flex items-center gap-1 font-sans">
+                                                    <Clock className="w-3 h-3" /> {article.readTime}
+                                                </span>
+                                            </div>
                                         </div>
-
-                                        <p className="text-lg text-[rgb(27,55,121)]/70 leading-relaxed max-w-2xl font-sans text-justify">
-                                            {article.excerpt}
-                                        </p>
-
-                                        <div className="flex flex-wrap gap-2 mt-2">
-                                            <span className="px-3 py-1 rounded-full border border-[rgb(27,55,121)]/20 text-[rgb(27,55,121)]/60 text-xs font-semibold uppercase tracking-wider font-sans">
-                                                {article.category}
-                                            </span>
-                                            <span className="px-3 py-1 rounded-full border border-[rgb(27,55,121)]/20 text-[rgb(27,55,121)]/60 text-xs font-semibold uppercase tracking-wider flex items-center gap-1 font-sans">
-                                                <Clock className="w-3 h-3" /> {article.readTime}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            </Link>
+                                    </motion.div>
+                                </Link>
+                                {index !== otherArticles.length - 1 && (
+                                    <hr className="my-12 border-t-2 border-[rgb(27,55,121)]/20" />
+                                )}
+                            </div>
                         ))}
                     </div>
 
