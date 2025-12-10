@@ -54,6 +54,8 @@ export const authOptions = {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
+          address: user.address,
+          phone: user.phone,
         };
       }
     })
@@ -71,17 +73,28 @@ export const authOptions = {
 
   // Callbacks for customizing JWT and session
   callbacks: {
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account, trigger, session }) {
+      // Handle session updates
+      if (trigger === "update" && session) {
+        token.address = session.user.address;
+        token.phone = session.user.phone;
+        return token;
+      }
+
       // Persist user data to the token after sign in
       if (user) {
         token.email = user.email;
         token.name = user.name;
+        token.address = user.address;
+        token.phone = user.phone;
 
-        // For OAuth, fetch the user from DB to get the correct _id
+        // For OAuth, fetch the user from DB to get the correct _id and additional info
         if (account && (account.provider === "google" || account.provider === "github")) {
           const dbUser = await getUserByEmail(user.email);
           if (dbUser) {
             token.id = dbUser._id.toString();
+            token.address = dbUser.address;
+            token.phone = dbUser.phone;
           }
         } else {
           // For credentials, user.id is already set correctly in authorize
@@ -104,6 +117,8 @@ export const authOptions = {
         session.user.id = token.id;
         session.user.email = token.email;
         session.user.name = token.name;
+        session.user.address = token.address;
+        session.user.phone = token.phone;
         session.accessToken = token.accessToken;
       }
 
