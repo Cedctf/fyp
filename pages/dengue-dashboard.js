@@ -24,9 +24,7 @@ export default function DengueDashboard() {
                 const config = {
                     version: 'v1',
                     config: {
-                        mapStyle: {
-                            styleType: 'light'
-                        },
+
                         visState: {
                             layers: [
                                 {
