@@ -6,6 +6,14 @@ import { ArrowLeft, Clock, Calendar, Share2, Bookmark } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import { ARTICLES } from '../../data/articles';
 
+const BACKGROUND_MAP = {
+    '/blog/blog1.jpeg': '/blog/backgroundblog1.jpg',
+    '/blog/blog2.jpeg': '/blog/backgroundblog2.jpg',
+    '/blog/blog3.jpeg': '/blog/backgroundblog3.jpg',
+    '/blog/blog4.jpeg': '/blog/backgroundblog4.jpg',
+    '/blog/blog5.jpeg': '/blog/backgroundblog5.jpg',
+};
+
 export default function ArticlePage() {
     const router = useRouter();
     const { id } = router.query;
@@ -71,29 +79,20 @@ export default function ArticlePage() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="relative w-full aspect-video md:aspect-[21/9] rounded-2xl overflow-hidden shadow-2xl mb-16"
+                        className="relative w-full md:max-w-5xl mx-auto aspect-video md:aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl mb-16"
                     >
                         {article.image ? (
                             <div className="relative w-full h-full flex items-center justify-center bg-gray-50 overflow-hidden">
                                 {/* Blurred Background */}
-                                <div className="absolute inset-0">
-                                    <img src={article.image} alt="" className="w-full h-full object-cover blur-3xl opacity-50 scale-110" />
-                                    <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                                <div className="absolute inset-0 overflow-hidden">
+                                    <img
+                                        src={BACKGROUND_MAP[article.image] || BACKGROUND_MAP['/blog/blog1.jpeg']}
+                                        alt=""
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                        style={{ mixBlendMode: 'multiply' }}
+                                    />
+                                    <div className="absolute inset-0 bg-white/10"></div>
                                 </div>
-
-                                {/* Main Image - Book Style */}
-                                <motion.div
-                                    className="relative z-10 h-[85%] aspect-[3/4] rounded-r-lg rounded-l-sm shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)]"
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    transition={{ delay: 0.2, duration: 0.5 }}
-                                >
-                                    <img src={article.image} alt={article.title} className="w-full h-full object-cover rounded-r-lg rounded-l-sm" />
-                                    {/* Spine effect */}
-                                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-black/20 to-transparent z-20 rounded-l-sm"></div>
-                                    {/* Gloss effect */}
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-40 rounded-r-lg pointer-events-none"></div>
-                                </motion.div>
                             </div>
                         ) : (
                             <div className={`absolute inset-0 bg-gradient-to-br ${article.imageGradient} flex items-center justify-center`}>
