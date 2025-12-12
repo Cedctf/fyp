@@ -70,10 +70,10 @@ export default function Footer() {
             id="footer"
             className={`fixed bottom-0 left-0 w-full z-0 h-[50vh] md:h-[450px] ${theme.bg} ${theme.text} transition-colors duration-300`}
         >
-            <div className="w-full h-full">
+            <div className="container mx-auto px-4 h-full">
                 {/* Card Container - using fixed height/width inside */}
                 <div
-                    className="relative h-full w-full flex flex-col justify-between p-6 md:p-10 overflow-hidden"
+                    className="relative h-full w-full flex flex-col justify-between py-6 md:py-10 overflow-hidden"
                 >
                     {/* Top Navigation */}
                     <div className={`flex flex-col md:flex-row justify-between items-start md:items-center text-sm font-medium ${theme.textSecondary} gap-8 md:gap-0`}>
@@ -98,7 +98,7 @@ export default function Footer() {
 
                     {/* Center Graphic */}
                     <div className="flex-1 flex items-end justify-start w-full pb-4 relative" style={{ minHeight: '100px' }}>
-                        <div className="w-full h-70 relative">
+                        <div className="w-full h-70 relative max-w-4xl">
                             <TextPressure
                                 text="DOPEWS-MY"
                                 flex={true}
@@ -133,9 +133,9 @@ export default function Footer() {
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                                className={`h-10 w-10 ${theme.buttonBg} ${theme.buttonText} rounded-full flex items-center justify-center ml-4 cursor-pointer`}
+                                className={`h-12 w-12 ${theme.buttonBg} ${theme.buttonText} rounded-full grid place-items-center leading-none ml-4 p-0 cursor-pointer relative z-50 shadow-lg`}
                             >
-                                <ArrowUp size={16} />
+                                <ArrowUp size={20} className="relative z-10" strokeWidth={2.5} />
                             </motion.button>
                         </div>
                     </div>
