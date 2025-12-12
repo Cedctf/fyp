@@ -8,6 +8,8 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -53,6 +55,8 @@ export default function SignUp() {
           name: name.trim(),
           email: email.toLowerCase(),
           password,
+          address: address.trim(),
+          phone: phone.trim(),
         }),
       });
 
@@ -106,7 +110,7 @@ export default function SignUp() {
             Get started with your free account
           </p>
         </div>
-        
+
         {error && (
           <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
             {error}
@@ -140,7 +144,7 @@ export default function SignUp() {
             </svg>
             Sign up with Google
           </button>
-          
+
           <button
             onClick={() => handleOAuthSignIn("github")}
             disabled={isLoading}
@@ -195,7 +199,37 @@ export default function SignUp() {
               disabled={isLoading}
             />
           </div>
-          
+
+          <div>
+            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+              Address
+            </label>
+            <input
+              id="address"
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              placeholder="123 Main St, City, Country"
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+              Phone Number
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              placeholder="+1 234 567 8900"
+              disabled={isLoading}
+            />
+          </div>
+
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               Password
