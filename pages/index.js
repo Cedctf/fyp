@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
@@ -6,6 +7,7 @@ import Navbar from "../components/Navbar";
 
 export default function Home() {
   const { data: session, status } = useSession();
+  const router = useRouter();
 
   return (
     <div

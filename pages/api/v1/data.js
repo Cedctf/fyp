@@ -1,4 +1,5 @@
 import { validateApiKey } from "@/lib/api-keys";
+import { getDatabase } from "@/lib/mongodb";
 
 export default async function handler(req, res) {
     // 1. Check for API key in headers
@@ -15,43 +16,52 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: "Invalid API key" });
     }
 
-    // 3. Return realistic mock data
-    // In a real app, you might use keyRecord.userId to fetch user-specific data from the DB
-    return res.status(200).json({
-        message: "Success! Data retrieved via Public API.",
-        meta: {
-            timestamp: new Date().toISOString(),
-            request_id: Math.random().toString(36).substring(7),
-            user_id: keyRecord.userId,
-        },
-        data: {
-            profile: {
-                username: "PlayerOne",
-                level: 42,
-                reputation: "Elite"
-            },
-            gaming_stats: {
-                game: "Tetris",
-                high_score: 15420,
-                total_lines_cleared: 1250,
-                games_played: 87,
-                win_rate: "N/A"
-            },
-            staking_portfolio: {
-                currency: "LINERA",
-                total_staked: 500.00,
-                rewards_earned: 12.50,
-                active_validators: 3,
-                positions: [
-                    { validator: "Validator A", amount: 200.00, apy: "5.2%" },
-                    { validator: "Validator B", amount: 300.00, apy: "4.8%" }
-                ]
-            },
-            recent_activity: [
-                { type: "GAME_PLAYED", score: 4500, date: new Date(Date.now() - 86400000).toISOString() },
-                { type: "STAKE_REWARD", amount: 0.5, date: new Date(Date.now() - 172800000).toISOString() },
-                { type: "GAME_PLAYED", score: 3200, date: new Date(Date.now() - 259200000).toISOString() }
-            ]
+    // 3. Query Database
+    try {
+        const db = await getDatabase();
+        const collection = db.collection('dengue_cases');
+
+        const { date, start_date, end_date, district, limit = 100 } = req.query;
+        const query = {};
+
+        // Date filtering
+        if (date) {
+            // Match exact date (ignoring time if stored as ISODate, but we stored as Date object at 00:00:00)
+            // To be safe, query range for that day
+            const queryDate = new Date(date);
+            if (!isNaN(queryDate.getTime())) {
+                const nextDay = new Date(queryDate);
+                nextDay.setDate(nextDay.getDate() + 1);
+                query.Visit_Date = {
+                    $gte: queryDate,
+                    $lt: nextDay
+                };
+            }
+        } else if (start_date || end_date) {
+            query.Visit_Date = {};
+            if (start_date) query.Visit_Date.$gte = new Date(start_date);
+            if (end_date) query.Visit_Date.$lte = new Date(end_date);
         }
-    });
+
+        // District filtering
+        if (district) {
+            query.District = district;
+        }
+
+        const cases = await collection.find(query).limit(parseInt(limit)).toArray();
+
+        return res.status(200).json({
+            message: "Success",
+            meta: {
+                count: cases.length,
+                timestamp: new Date().toISOString(),
+                request_id: Math.random().toString(36).substring(7),
+            },
+            data: cases
+        });
+
+    } catch (error) {
+        console.error("Database query error:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
 }
