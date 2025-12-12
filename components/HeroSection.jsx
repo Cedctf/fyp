@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useTexture, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
@@ -7,15 +7,20 @@ import * as THREE from "three";
 const PANO_URL = "/world_pano.png";
 const CAMERA_FOV = 75;
 // Adjusted rotation to recenter the view for the new Z position
-const rotationAngle = 1.4; 
+const rotationAngle = 1.4;
 
 // --- 2. PANO COMPONENT (MODIFIED to accept rotationAngle as a prop for flexibility) ---
-const PanoBackground = ({ url, rotationAngle }) => { // <--- Added rotationAngle prop
+const PanoBackground = ({ url, rotationAngle, onLoad }) => {
     const texture = useTexture(url);
     texture.colorSpace = THREE.SRGBColorSpace;
-    
+
+    useEffect(() => {
+        if (texture && onLoad) {
+            onLoad();
+        }
+    }, [texture, onLoad]);
+
     return (
-        // Apply the updated rotation
         <mesh rotation={[0, rotationAngle, 0]}>
             <sphereGeometry args={[500, 60, 40]} />
             <meshBasicMaterial
@@ -55,24 +60,28 @@ const GlobalCameraRig = () => {
 /**
  * The main component rendering the Canvas and all 3D objects.
  */
-const HeroSection = () => {
-    // Corrected Z-position for a close-up feel, and X position for right-of-center view
-    const newCameraPosition = [100, 0, -200.0]; 
+const HeroSection = ({ onSceneReady }) => {
+    const [isReady, setIsReady] = useState(false);
+    const newCameraPosition = [100, 0, -200.0];
+
+    const handleSceneLoad = () => {
+        setIsReady(true);
+        if (onSceneReady) {
+            onSceneReady();
+        }
+    };
 
     return (
-        // FIX FOR SCROLLING: Changed styling to flow with document
         <div style={{ position: 'relative', width: '100%', height: '100vh', backgroundColor: 'black' }}>
             <Canvas>
                 <PerspectiveCamera
                     makeDefault
-                    // UPDATED POSITION
-                    position={newCameraPosition} 
+                    position={newCameraPosition}
                     fov={CAMERA_FOV}
                 />
 
                 <Suspense fallback={null}>
-                    {/* Pass rotationAngle to PanoBackground */}
-                    <PanoBackground url={PANO_URL} rotationAngle={rotationAngle} /> 
+                    <PanoBackground url={PANO_URL} rotationAngle={rotationAngle} onLoad={handleSceneLoad} />
                     <GlobalCameraRig />
                 </Suspense>
             </Canvas>
