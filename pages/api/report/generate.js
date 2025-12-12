@@ -19,7 +19,7 @@ export default function handler(req, res) {
   // --hist_days default to 0 if not provided
   const histDays = days || 0;
 
-  const command = `python "${pythonScript}" --week ${week} --predictions "${predictionsPath}" --csv "${csvPath}" --outdir "${outDir}" --hist_days ${histDays}`;
+  const command = `python3 "${pythonScript}" --week ${week} --predictions "${predictionsPath}" --csv "${csvPath}" --outdir "${outDir}" --hist_days ${histDays}`;
 
   exec(command, (error, stdout, stderr) => {
     if (error) {
