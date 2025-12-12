@@ -1,6 +1,8 @@
 import HeroSection from "../components/HeroSection";
 import Navbar from "../components/Navbar";
 
+import Link from 'next/link';
+
 export default function Home() {
 
   return (
@@ -30,12 +32,16 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-            <button className="relative px-8 py-3 bg-transparent border border-white text-white rounded-full transition-all duration-500 ease-out shadow-[inset_0_0_0_0_white] hover:shadow-[inset_0_-100px_0_0_white] hover:text-black tracking-widest text-sm font-medium cursor-pointer active:scale-90">
-              VIEW DENGUE TRENDS
-            </button>
-            <button className="relative px-8 py-3 bg-white text-black rounded-full transition-all duration-500 ease-out shadow-[inset_0_0_0_0_rgb(27,55,121)] hover:shadow-[inset_0_-100px_0_0_rgb(27,55,121)] hover:text-white tracking-widest text-sm font-medium cursor-pointer active:scale-90">
-              OPEN API DASHBOARD
-            </button>
+            <Link href="/dengue-heatmap">
+              <button className="relative px-8 py-3 bg-transparent border border-white text-white rounded-full transition-all duration-500 ease-out shadow-[inset_0_0_0_0_white] hover:shadow-[inset_0_-100px_0_0_white] hover:text-black tracking-widest text-sm font-medium cursor-pointer active:scale-90">
+                VIEW DENGUE TRENDS
+              </button>
+            </Link>
+            <Link href="/api-dashboard">
+              <button className="relative px-8 py-3 bg-white text-black rounded-full transition-all duration-500 ease-out shadow-[inset_0_0_0_0_rgb(27,55,121)] hover:shadow-[inset_0_-100px_0_0_rgb(27,55,121)] hover:text-white tracking-widest text-sm font-medium cursor-pointer active:scale-90">
+                OPEN API DASHBOARD
+              </button>
+            </Link>
           </div>
         </div>
       </div>
