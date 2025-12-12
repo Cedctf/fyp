@@ -7,10 +7,24 @@ import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BlogCard from './ui/blog-cards';
 
-const Navbar = () => {
+const Navbar = ({ isDark }) => {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
+
+    // Determine if we should show light text (Beige)
+    // If isDark prop is passed, use it. Otherwise default to True only for Home ('/').
+    // BUT: "isDark" usually means Background is Dark, so Text is Light.
+    // If isDark prop is provided, we respect it.
+    // If not, we fall back to route check: Home = Dark Bg (Light Text), Others = Light Bg (Dark Text).
+    const isDarkTheme = isDark !== undefined ? isDark : (router.pathname === '/');
+
+    // Text Color:
+    // Open Menu -> Blue
+    // Dark Theme -> Beige
+    // Light Theme -> Blue
+    const textColorClass = isOpen ? 'text-[rgb(27,55,121)]' : (isDarkTheme ? 'text-[rgb(242,240,235)]' : 'text-[rgb(27,55,121)]');
+    const buttonColor = isOpen ? 'rgb(27,55,121)' : (isDarkTheme ? 'rgb(242,240,235)' : 'rgb(27,55,121)');
 
     const menuItems = [
         { title: "HOME", date: "01", description: "Return to the main landing page.", href: "/" },
@@ -64,7 +78,7 @@ const Navbar = () => {
                     {/* Logo (Top Left) */}
                     <Link
                         href="/"
-                        className={`text-2xl font-bold font-serif tracking-tight z-50 relative ${(isOpen || router.pathname !== '/') ? 'text-[rgb(27,55,121)]' : 'text-white'}`}
+                        className={`text-2xl font-bold font-serif tracking-tight z-50 relative ${textColorClass}`}
                     >
                         DOPEWS-MY
                     </Link>
@@ -73,7 +87,7 @@ const Navbar = () => {
                     <button
                         onClick={() => setIsOpen(!isOpen)}
                         className="z-50 relative p-2 rounded-full transition-colors hover:bg-black/5"
-                        style={{ color: (isOpen || router.pathname !== '/') ? 'rgb(27,55,121)' : 'white' }}
+                        style={{ color: buttonColor }}
                     >
                         <AnimatePresence mode="wait">
                             {isOpen ? (
@@ -110,9 +124,9 @@ const Navbar = () => {
                                 transition={{ duration: 0.4, ease: "easeInOut" }}
                                 className="fixed inset-0 bg-white z-40 overflow-y-auto"
                             >
-                                <div className="container mx-auto px-4 py-8 md:py-12 flex flex-col justify-between min-h-screen">
+                                <div className="container mx-auto px-4 pt-24 pb-8 md:pt-32 md:pb-12 flex flex-col justify-between min-h-screen">
                                     {/* Middle Section: Main Navigation Links */}
-                                    <div className="flex flex-col flex-grow justify-center w-full">
+                                    <div className="flex flex-col flex-grow justify-center w-full pt-12 md:pt-0">
                                         <motion.div
                                             variants={menuContainerVariants}
                                             initial="hidden"
