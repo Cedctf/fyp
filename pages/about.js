@@ -20,7 +20,7 @@ export default function About() {
 
     // Theme Constants matching DOPEWS-MY
     const theme = {
-        light: { bg: "bg-blue-50", text: "text-slate-800", cursor: "bg-slate-800" },
+        light: { bg: "bg-[rgb(242,240,235)]", text: "text-slate-800", cursor: "bg-slate-800" },
         dark: { bg: "bg-[rgb(27,55,121)]", text: "text-white", cursor: "bg-white" },
         accent: "rgb(27, 55, 121)"
     };
@@ -122,16 +122,18 @@ export default function About() {
 
 
 
-            <Navbar />
+            <Navbar isDark={isDark} />
 
             <main className="w-full relative">
                 {/* Hero Section */}
-                <section className="min-h-screen w-full flex flex-col justify-end pb-24 relative pt-32" data-theme="light">
+                <section className="min-h-screen w-full flex flex-col relative pt-32" data-theme="light">
                     <div className="container mx-auto px-4">
-                        <h1 className="text-[10vw] leading-[1.1] font-bold font-serif tracking-tighter mb-8 z-10 text-[rgb(27,55,121)] flex flex-wrap gap-[1.5vw] items-baseline">
-                            <div className="reveal-text pt-2 pb-4"><span>Predicting</span></div>
-                            <div className="reveal-text pt-2 pb-4 pr-4"><span className="italic text-slate-400 font-serif">The</span></div>
-                            <div className="reveal-text pt-2 pb-4"><span>Invisible</span></div>
+                        <h1 className="text-[10vw] leading-[1.1] font-bold font-serif tracking-tighter mb-8 z-10 text-[rgb(27,55,121)] flex flex-wrap items-baseline justify-start gap-y-4">
+                            <div className="flex items-baseline gap-[0.25em] mr-4 md:mr-0">
+                                <div className="reveal-text w-max pt-2 pb-4"><span>Predicting</span></div>
+                                <div className="reveal-text w-max pt-2 pb-4 pr-4"><span className="italic text-slate-400 font-serif">The</span></div>
+                            </div>
+                            <div className="reveal-text w-max pt-2 pb-4"><span>Invisible</span></div>
                         </h1>
 
                         <div className="flex flex-col md:flex-row justify-between items-end w-full border-t border-[rgb(27,55,121)] pt-8 transition-colors duration-500">
