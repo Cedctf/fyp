@@ -20,7 +20,7 @@ export default function About() {
 
     // Theme Constants matching DOPEWS-MY
     const theme = {
-        light: { bg: "bg-[rgb(242,240,235)]", text: "text-slate-800", cursor: "bg-slate-800" },
+        light: { bg: "bg-white", text: "text-slate-800", cursor: "bg-slate-800" },
         dark: { bg: "bg-[rgb(27,55,121)]", text: "text-white", cursor: "bg-white" },
         accent: "rgb(27, 55, 121)"
     };
