@@ -11,10 +11,12 @@
   "dependencies": {
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
+    "@studio-freight/lenis": "^1.0.42",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.25",
+    "gsap": "^3.14.1",
     "lucide-react": "^0.556.0",
     "mongodb": "^6.20.0",
     "next": "16.0.1",
