@@ -27,23 +27,6 @@ export default function DengueHeatmapPage() {
                 </div>
             </div>
 
-            {/* Legend Overlay */}
-            <div className="absolute bottom-8 right-8 z-10 bg-white/90 backdrop-blur-md p-4 rounded-xl border border-black/10 max-w-xs shadow-lg">
-                <h3 className="text-sm font-semibold mb-2 text-gray-800">Risk Intensity</h3>
-                <div className="flex items-center gap-2 text-xs text-gray-600 mb-1">
-                    <div className="w-4 h-4 rounded bg-green-500"></div>
-                    <span>Low Risk</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-600 mb-1">
-                    <div className="w-4 h-4 rounded bg-yellow-400"></div>
-                    <span>Medium Risk</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-600">
-                    <div className="w-4 h-4 rounded bg-red-500"></div>
-                    <span>High Risk</span>
-                </div>
-            </div>
-
             <DengueHeatmap />
         </div>
     );
