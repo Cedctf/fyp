@@ -136,7 +136,7 @@ export default function ApiDashboard() {
                                     <button
                                         type="submit"
                                         disabled={demoLoading}
-                                        className="ml-2 bg-[rgb(27,55,121)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 disabled:opacity-50 transition-colors text-sm flex items-center justify-center gap-2 whitespace-nowrap min-w-[200px]"
+                                        className="ml-2 bg-[rgb(27,55,121)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 disabled:opacity-50 transition-colors text-sm flex items-center justify-center gap-3 whitespace-nowrap min-w-[200px]"
                                     >
                                         <Send className="w-4 h-4" />
                                         {demoLoading ? "Sending..." : "Send Request"}
