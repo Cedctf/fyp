@@ -1,16 +1,14 @@
-import { useSession } from "next-auth/react";
-import Link from "next/link";
-
 import HeroSection from "../components/HeroSection";
 import Navbar from "../components/Navbar";
 
 export default function Home() {
-  const { data: session, status } = useSession();
 
   return (
     <div
       className={`relative flex min-h-screen flex-col bg-gradient-to-br from-blue-50 to-indigo-100 font-sans`}
     >
+
+
       {/* Navigation Bar */}
       <Navbar />
 
