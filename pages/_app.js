@@ -28,10 +28,7 @@ const playfair = localFont({
 export default function App({
   Component,
   pageProps: { session, ...pageProps }
-export default function App({
-    Component,
-    pageProps: { session, ...pageProps }
-  }) {
+}) {
   const router = useRouter();
   const contentRef = useRef(null);
 
