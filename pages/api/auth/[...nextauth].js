@@ -135,7 +135,7 @@ export const authOptions = {
           if (!existingUser) {
             // Create new OAuth user in MongoDB
             const usersCollection = await getUsersCollection();
-            await usersCollection.insertOne({
+            const result = await usersCollection.insertOne({
               email: user.email.toLowerCase(),
               name: user.name || user.email.split('@')[0],
               image: user.image,

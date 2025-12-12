@@ -3,10 +3,22 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Navbar from '../../components/Navbar';
-import { Calendar, Clock, ArrowRight, BookOpen, Search } from 'lucide-react';
+import { Calendar, Clock, ArrowRight, BookOpen, Search, ChevronDown, Check } from 'lucide-react';
 import { ARTICLES } from '../../data/articles';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '../../components/ui/dropdown-menu';
 
 const CATEGORIES = ["All", "prevention", "symptoms", "education", "tech & innovation", "community"];
+const SORT_OPTIONS = [
+    { value: "newest", label: "Newest First" },
+    { value: "oldest", label: "Oldest First" },
+    { value: "readTimeAsc", label: "Reading Time (Shortest)" },
+    { value: "readTimeDesc", label: "Reading Time (Longest)" },
+];
 
 export default function EducationPage() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -85,40 +97,57 @@ export default function EducationPage() {
                             {/* Sort By */}
                             <div className="flex items-center gap-4 relative group">
                                 <span className="text-sm font-sans text-[rgb(27,55,121)]">Sort by</span>
-                                <div className="relative">
-                                    <select
-                                        value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value)}
-                                        className="appearance-none bg-transparent text-sm font-sans font-medium text-[rgb(27,55,121)] pr-8 py-1 focus:outline-none cursor-pointer border-b border-transparent hover:border-[rgb(27,55,121)]/30 transition-colors"
-                                    >
-                                        <option value="newest">Newest First</option>
-                                        <option value="oldest">Oldest First</option>
-                                        <option value="readTimeAsc">Reading Time (Shortest)</option>
-                                        <option value="readTimeDesc">Reading Time (Longest)</option>
-                                    </select>
-                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none">
-                                        <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-[rgb(27,55,121)]"></div>
-                                    </div>
-                                </div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button
+                                            className="flex items-center gap-2 bg-transparent pr-8 py-1 text-sm font-sans font-medium text-[rgb(27,55,121)] transition focus:outline-none"
+                                            aria-label="Sort articles"
+                                        >
+                                            <span>{SORT_OPTIONS.find(opt => opt.value === sortBy)?.label}</span>
+                                            <ChevronDown className="h-4 w-4" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="min-w-[14rem] text-[rgb(27,55,121)]">
+                                        {SORT_OPTIONS.map(option => (
+                                            <DropdownMenuItem
+                                                key={option.value}
+                                                onSelect={() => setSortBy(option.value)}
+                                                className="flex items-center gap-2 text-[rgb(27,55,121)] data-[highlighted]:text-[rgb(27,55,121)]"
+                                            >
+                                                <span className="flex-1">{option.label}</span>
+                                                {sortBy === option.value && <Check className="h-4 w-4" />}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
 
                             {/* Filter */}
                             <div className="flex items-center gap-4 relative group">
                                 <span className="text-sm font-sans text-[rgb(27,55,121)]">Filter</span>
-                                <div className="relative">
-                                    <select
-                                        value={selectedCategory}
-                                        onChange={(e) => setSelectedCategory(e.target.value)}
-                                        className="appearance-none bg-transparent text-sm font-sans font-medium text-[rgb(27,55,121)] pr-8 py-1 focus:outline-none cursor-pointer border-b border-transparent hover:border-[rgb(27,55,121)]/30 transition-colors"
-                                    >
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button
+                                            className="flex items-center gap-2 bg-transparent pr-8 py-1 text-sm font-sans font-medium text-[rgb(27,55,121)] transition focus:outline-none"
+                                            aria-label="Filter articles"
+                                        >
+                                            <span>{selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}</span>
+                                            <ChevronDown className="h-4 w-4" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="min-w-[14rem] text-[rgb(27,55,121)]">
                                         {CATEGORIES.map(cat => (
-                                            <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                                            <DropdownMenuItem
+                                                key={cat}
+                                                onSelect={() => setSelectedCategory(cat)}
+                                                className="flex items-center gap-2 text-[rgb(27,55,121)] data-[highlighted]:text-[rgb(27,55,121)]"
+                                            >
+                                                <span className="flex-1">{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                                                {selectedCategory === cat && <Check className="h-4 w-4" />}
+                                            </DropdownMenuItem>
                                         ))}
-                                    </select>
-                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none">
-                                        <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-[rgb(27,55,121)]"></div>
-                                    </div>
-                                </div>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                         </div>
                     </div>
