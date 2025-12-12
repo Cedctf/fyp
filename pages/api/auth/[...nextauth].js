@@ -4,7 +4,6 @@ import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { getUsersCollection } from "@/lib/mongodb";
-import { updateLastLogin } from "@/lib/security";
 
 async function getUserByEmail(email) {
   const usersCollection = await getUsersCollection();
@@ -50,9 +49,6 @@ export const authOptions = {
         if (!isPasswordValid) {
           throw new Error("Invalid credentials");
         }
-
-        // Update last login
-        await updateLastLogin(user._id.toString());
 
         return {
           id: user._id.toString(),
@@ -148,8 +144,6 @@ export const authOptions = {
               createdAt: new Date(),
               updatedAt: new Date(),
             });
-            // Update last login for new user
-            await updateLastLogin(result.insertedId.toString());
           } else {
             // Update last login time
             const usersCollection = await getUsersCollection();
@@ -157,8 +151,6 @@ export const authOptions = {
               { email: user.email.toLowerCase() },
               { $set: { updatedAt: new Date() } }
             );
-            // Update last login in security collection
-            await updateLastLogin(existingUser._id.toString());
           }
         } catch (error) {
           console.error('Error saving OAuth user:', error);
