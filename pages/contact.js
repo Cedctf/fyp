@@ -203,7 +203,7 @@ export default function Contact() {
 
 
     return (
-        <div className="min-h-screen bg-blue-50 font-sans text-slate-800 selection:bg-[rgb(27,55,121)] selection:text-white">
+        <div className="min-h-screen bg-[rgb(242,240,235)] font-sans text-slate-800 selection:bg-[rgb(27,55,121)] selection:text-white">
             <Head>
                 <title>Contact Us | DOPEWS-MY</title>
                 <style>{`
