@@ -16,6 +16,7 @@ export default function ApiDashboard() {
     const [demoLoading, setDemoLoading] = useState(false);
     const [demoError, setDemoError] = useState(null);
     const [testKey, setTestKey] = useState('');
+    const [selectedEndpoint, setSelectedEndpoint] = useState('/api/v1/data');
 
     // Alert Test State
     const [alertLoading, setAlertLoading] = useState(false);
@@ -55,7 +56,7 @@ export default function ApiDashboard() {
         setDemoData(null);
 
         try {
-            const res = await fetch('/api/v1/data', {
+            const res = await fetch(selectedEndpoint, {
                 headers: {
                     'x-api-key': testKey
                 }
@@ -130,7 +131,7 @@ export default function ApiDashboard() {
                                     API Playground
                                 </h2>
                                 <p className="text-[rgb(27,55,121)]/70 mt-1">
-                                    Test the <code className="bg-[rgb(27,55,121)]/10 px-1 py-0.5 rounded">/api/v1/data</code> endpoint live.
+                                    Test the <code className="bg-[rgb(27,55,121)]/10 px-1 py-0.5 rounded">{selectedEndpoint}</code> endpoint live.
                                 </p>
                             </div>
                             <div className="bg-[rgb(27,55,121)]/10 text-[rgb(27,55,121)] px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ml-6">
@@ -139,27 +140,44 @@ export default function ApiDashboard() {
                         </div>
 
                         <form onSubmit={runApiDemo} className="space-y-4 mt-6">
-                            <div>
-                                <label className="block text-sm font-semibold uppercase tracking-widest text-[rgb(27,55,121)]/70 mb-2">
-                                    Your API Key
-                                </label>
-                                <div className="flex items-center justify-between">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold uppercase tracking-widest text-[rgb(27,55,121)]/70 mb-2">
+                                        Endpoint
+                                    </label>
+                                    <select
+                                        value={selectedEndpoint}
+                                        onChange={(e) => setSelectedEndpoint(e.target.value)}
+                                        className="w-full px-3 py-2 border border-[rgb(27,55,121)]/20 rounded-md focus:ring-2 focus:ring-[rgb(27,55,121)] focus:border-[rgb(27,55,121)] font-mono text-sm bg-white text-[rgb(27,55,121)]"
+                                    >
+                                        <option value="/api/v1/data">/api/v1/data</option>
+                                        <option value="/api/v1/areas">/api/v1/areas</option>
+                                        <option value="/api/v1/availability">/api/v1/availability</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold uppercase tracking-widest text-[rgb(27,55,121)]/70 mb-2">
+                                        Your API Key
+                                    </label>
                                     <input
                                         type="text"
                                         value={testKey}
                                         onChange={(e) => setTestKey(e.target.value)}
                                         placeholder="Paste your API Key here (fyp_sk_...)"
-                                        className="flex-1 px-3 py-2 border border-[rgb(27,55,121)]/20 rounded-md focus:ring-2 focus:ring-[rgb(27,55,121)] focus:border-[rgb(27,55,121)] font-mono text-sm bg-white text-[rgb(27,55,121)]"
+                                        className="w-full px-3 py-2 border border-[rgb(27,55,121)]/20 rounded-md focus:ring-2 focus:ring-[rgb(27,55,121)] focus:border-[rgb(27,55,121)] font-mono text-sm bg-white text-[rgb(27,55,121)]"
                                     />
-                                    <button
-                                        type="submit"
-                                        disabled={demoLoading}
-                                        className="ml-2 bg-[rgb(27,55,121)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 disabled:opacity-50 transition-colors text-sm flex items-center justify-center gap-3 whitespace-nowrap min-w-[200px]"
-                                    >
-                                        <Send className="w-4 h-4" />
-                                        {demoLoading ? "Sending..." : "Send Request"}
-                                    </button>
                                 </div>
+                            </div>
+
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={demoLoading}
+                                    className="bg-[rgb(27,55,121)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 disabled:opacity-50 transition-colors text-sm flex items-center justify-center gap-3 whitespace-nowrap min-w-[150px]"
+                                >
+                                    <Send className="w-4 h-4" />
+                                    {demoLoading ? "Sending..." : "Send Request"}
+                                </button>
                             </div>
                         </form>
 
