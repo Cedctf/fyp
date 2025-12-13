@@ -17,6 +17,24 @@ export default function ApiDashboard() {
     const [demoError, setDemoError] = useState(null);
     const [testKey, setTestKey] = useState('');
 
+    // Alert Test State
+    const [alertLoading, setAlertLoading] = useState(false);
+    const [alertResponse, setAlertResponse] = useState(null);
+
+    const runAlertTest = async () => {
+        setAlertLoading(true);
+        setAlertResponse(null);
+        try {
+            const res = await fetch('/api/alerts/trigger', { method: 'POST' });
+            const data = await res.json();
+            setAlertResponse(data);
+        } catch (err) {
+            setAlertResponse({ error: "Failed to trigger alerts" });
+        } finally {
+            setAlertLoading(false);
+        }
+    };
+
     // Redirect to sign in if not authenticated
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -99,7 +117,7 @@ export default function ApiDashboard() {
 
                 <section className="space-y-10">
                     {/* API Key Management */}
-                        <ApiKeyManager />
+                    <ApiKeyManager />
 
                     {/* Divider */}
                     <div className="h-px bg-[rgb(27,55,121)]/20"></div>
@@ -109,14 +127,14 @@ export default function ApiDashboard() {
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
                                 <h2 className="text-3xl font-serif font-semibold text-[rgb(27,55,121)] mb-4">
-                                        API Playground
-                                    </h2>
-                                    <p className="text-[rgb(27,55,121)]/70 mt-1">
-                                        Test the <code className="bg-[rgb(27,55,121)]/10 px-1 py-0.5 rounded">/api/v1/data</code> endpoint live.
-                                    </p>
-                                </div>
+                                    API Playground
+                                </h2>
+                                <p className="text-[rgb(27,55,121)]/70 mt-1">
+                                    Test the <code className="bg-[rgb(27,55,121)]/10 px-1 py-0.5 rounded">/api/v1/data</code> endpoint live.
+                                </p>
+                            </div>
                             <div className="bg-[rgb(27,55,121)]/10 text-[rgb(27,55,121)] px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ml-6">
-                                    GET Request
+                                GET Request
                             </div>
                         </div>
 
@@ -160,6 +178,49 @@ export default function ApiDashboard() {
                                 </div>
                                 <pre className="text-green-400 font-mono text-sm overflow-x-auto custom-scrollbar">
                                     {JSON.stringify(demoData, null, 2)}
+                                </pre>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-px bg-[rgb(27,55,121)]/20"></div>
+
+                    {/* Test Alert System */}
+                    <div className="space-y-4">
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <h2 className="text-3xl font-serif font-semibold text-[rgb(27,55,121)] mb-4">
+                                    Test Alert System
+                                </h2>
+                                <p className="text-[rgb(27,55,121)]/70 mt-1">
+                                    Trigger the backend email alert system manually. This will scan for high-risk users and trigger email alerts.
+                                </p>
+                            </div>
+                            <div className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ml-6">
+                                ADMIN ONLY
+                            </div>
+                        </div>
+
+                        <div className="mt-6">
+                            <button
+                                onClick={runAlertTest}
+                                disabled={alertLoading}
+                                className="bg-[rgb(27,55,121)] text-white px-6 py-3 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 disabled:opacity-50 transition-colors text-sm flex items-center gap-3 shadow-lg shadow-[rgb(27,55,121)]/10"
+                            >
+                                <Send className="w-4 h-4" />
+                                {alertLoading ? "Triggering Alerts..." : "Trigger Email Alerts"}
+                            </button>
+                        </div>
+
+                        {alertResponse && (
+                            <div className="mt-6 rounded-md bg-[rgb(27,55,121)] p-4 overflow-hidden shadow-inner animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="flex justify-between items-center mb-2 border-b border-[rgb(27,55,121)]/30 pb-2">
+                                    <span className="text-green-400 font-mono text-sm font-bold">System Log</span>
+                                    <span className="text-[rgb(27,55,121)]/50 text-xs font-mono">timestamp: {new Date().toLocaleTimeString()}</span>
+                                </div>
+                                <pre className="text-green-400 font-mono text-sm overflow-x-auto custom-scrollbar">
+                                    {JSON.stringify(alertResponse, null, 2)}
                                 </pre>
                             </div>
                         )}
