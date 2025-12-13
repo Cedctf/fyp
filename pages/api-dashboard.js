@@ -225,6 +225,146 @@ export default function ApiDashboard() {
                             </div>
                         )}
                     </div>
+                    {/* API Documentation */}
+                    <div className="h-px bg-[rgb(27,55,121)]/20"></div>
+
+                    <div className="space-y-8">
+                        <div>
+                            <h2 className="text-3xl font-serif font-semibold text-[rgb(27,55,121)] mb-4">
+                                Documentation
+                            </h2>
+                            <p className="text-[rgb(27,55,121)]/70">
+                                Official reference for the Dengue Data API.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-8 md:grid-cols-2">
+                            {/* Authentication */}
+                            <div className="bg-white border border-[rgb(27,55,121)]/10 rounded-lg p-6 shadow-sm">
+                                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                                    <span className="bg-[rgb(27,55,121)] text-white text-xs px-2 py-1 rounded">AUTH</span>
+                                    Authentication
+                                </h3>
+                                <p className="text-sm text-[rgb(27,55,121)]/70 mb-4">
+                                    All API requests must include your API key in the header.
+                                </p>
+                                <div className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-xs text-[rgb(27,55,121)]">
+                                    x-api-key: YOUR_API_KEY
+                                </div>
+                            </div>
+
+                            {/* Response Format */}
+                            <div className="bg-white border border-[rgb(27,55,121)]/10 rounded-lg p-6 shadow-sm">
+                                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                                    <span className="bg-green-600 text-white text-xs px-2 py-1 rounded">JSON</span>
+                                    Standard Response
+                                </h3>
+                                <pre className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-xs text-[rgb(27,55,121)] overflow-x-auto">
+                                    {`{
+  "message": "Success",
+  "meta": {
+    "count": 100,
+    "timestamp": "2025-12-14T...",
+    "request_id": "abc123xyz"
+  },
+  "data": [...]
+}`}
+                                </pre>
+                            </div>
+                        </div>
+
+                        {/* Endpoints */}
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-semibold border-b border-[rgb(27,55,121)]/10 pb-2">Endpoints</h3>
+
+                            {/* GET /data */}
+                            <div className="group">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold font-mono">GET</span>
+                                    <code className="text-lg font-mono text-[rgb(27,55,121)]">/api/v1/data</code>
+                                </div>
+                                <p className="text-sm text-[rgb(27,55,121)]/70 mb-4">
+                                    Retrieve dengue case records with optional filtering.
+                                </p>
+                                <table className="w-full text-sm text-left">
+                                    <thead className="text-xs text-[rgb(27,55,121)]/50 uppercase bg-gray-50">
+                                        <tr>
+                                            <th className="px-4 py-2">Parameter</th>
+                                            <th className="px-4 py-2">Type</th>
+                                            <th className="px-4 py-2">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        <tr>
+                                            <td className="px-4 py-2 font-mono text-[rgb(27,55,121)]">area</td>
+                                            <td className="px-4 py-2 text-gray-500">string</td>
+                                            <td className="px-4 py-2">Filter by area name (e.g., "Kepong")</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-mono text-[rgb(27,55,121)]">date</td>
+                                            <td className="px-4 py-2 text-gray-500">YYYY-MM-DD</td>
+                                            <td className="px-4 py-2">Get cases for a specific date</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-mono text-[rgb(27,55,121)]">start_date</td>
+                                            <td className="px-4 py-2 text-gray-500">YYYY-MM-DD</td>
+                                            <td className="px-4 py-2">Filter records from this date</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-mono text-[rgb(27,55,121)]">end_date</td>
+                                            <td className="px-4 py-2 text-gray-500">YYYY-MM-DD</td>
+                                            <td className="px-4 py-2">Filter records up to this date</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-mono text-[rgb(27,55,121)]">limit</td>
+                                            <td className="px-4 py-2 text-gray-500">number</td>
+                                            <td className="px-4 py-2">Max records (default: 5). Set to 0 for all.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="mt-4 bg-gray-50 p-3 rounded border border-gray-200 font-mono text-xs text-[rgb(27,55,121)] overflow-x-auto">
+                                <span className="text-gray-400 select-none block mb-1"># Example Request</span>
+                                <code className="block whitespace-pre">
+                                    curl -H "x-api-key: YOUR_KEY" "http://localhost:3000/api/v1/data?area=Kepong&limit=5"
+                                </code>
+                            </div>
+
+                            {/* GET /areas */}
+                            <div className="group pt-6 border-t border-gray-100">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold font-mono">GET</span>
+                                    <code className="text-lg font-mono text-[rgb(27,55,121)]">/api/v1/areas</code>
+                                </div>
+                                <p className="text-sm text-[rgb(27,55,121)]/70">
+                                    Get a list of all available districts/areas in the database.
+                                </p>
+                                <div className="mb-4 bg-gray-50 p-3 rounded border border-gray-200 font-mono text-xs text-[rgb(27,55,121)] overflow-x-auto">
+                                    <span className="text-gray-400 select-none block mb-1"># Example Request</span>
+                                    <code className="block whitespace-pre">
+                                        curl -H "x-api-key: YOUR_KEY" "http://localhost:3000/api/v1/areas"
+                                    </code>
+                                </div>
+                            </div>
+
+                            {/* GET /availability */}
+                            <div className="group pt-6 border-t border-gray-100">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold font-mono">GET</span>
+                                    <code className="text-lg font-mono text-[rgb(27,55,121)]">/api/v1/availability</code>
+                                </div>
+                                <p className="text-sm text-[rgb(27,55,121)]/70">
+                                    Get metadata about the dataset, including the full date range of available records.
+                                </p>
+                                <div className="mb-4 bg-gray-50 p-3 rounded border border-gray-200 font-mono text-xs text-[rgb(27,55,121)] overflow-x-auto">
+                                    <span className="text-gray-400 select-none block mb-1"># Example Request</span>
+                                    <code className="block whitespace-pre">
+                                        curl -H "x-api-key: YOUR_KEY" "http://localhost:3000/api/v1/availability"
+                                    </code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </main>
         </div>
