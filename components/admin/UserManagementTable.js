@@ -172,7 +172,9 @@ export default function UserManagementTable() {
                                     onClick={() => setSelectedUser(user)}
                                 >
                                     <td className="px-6 py-4">
-                                        <div className="font-medium text-[rgb(27,55,121)]">{user.name}</div>
+                                        <div className="font-medium text-[rgb(27,55,121)]">
+                                            {user.name} <span className="text-xs text-gray-400 font-normal ml-1">({user._id})</span>
+                                        </div>
                                         <div className="text-xs text-gray-500">{user.email}</div>
                                     </td>
                                     <td className="px-6 py-4">
