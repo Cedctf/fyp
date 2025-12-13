@@ -98,7 +98,7 @@ export default function Footer() {
 
                     {/* Center Graphic */}
                     <div className="flex-1 flex items-end justify-start w-full pb-4 relative" style={{ minHeight: '100px' }}>
-                        <div className="w-full h-70 relative max-w-4xl">
+                        <div className="w-full h-50 relative max-w-4xl">
                             <TextPressure
                                 text="DOPEWS-MY"
                                 flex={true}
