@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { getUsersCollection } from "@/lib/mongodb";
+import { logActivity } from "@/lib/audit";
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -55,10 +56,18 @@ export default async function handler(req, res) {
       createdAt: new Date(),
       updatedAt: new Date(),
       provider: 'credentials',
+      role: 'user', // Default role
     };
 
     // Save user to MongoDB
     const result = await usersCollection.insertOne(newUser);
+
+    // Audit Log
+    await logActivity(result.insertedId, "USER_SIGNUP", "auth", {
+      email: newUser.email,
+      name: newUser.name,
+      provider: 'credentials'
+    });
 
     // Return success (don't send password back)
     res.status(201).json({
