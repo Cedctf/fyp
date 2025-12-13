@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, Shield, UserPlus } from "lucide-react";
+import { Users, Shield, UserPlus, Search, Filter } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 export default function UserManagementTable() {
@@ -7,6 +7,8 @@ export default function UserManagementTable() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filterRole, setFilterRole] = useState("ALL");
 
     // Create User Modal State
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -88,9 +90,19 @@ export default function UserManagementTable() {
         );
     }
 
+    const filteredUsers = users.filter(user => {
+        const matchesSearch =
+            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesFilter = filterRole === 'ALL' || (user.role || 'user') === filterRole;
+
+        return matchesSearch && matchesFilter;
+    });
+
     return (
         <div>
-            <header className="mb-6 flex items-center justify-between">
+            <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-serif font-semibold flex items-center gap-3">
                         <Users className="w-6 h-6" />
@@ -100,13 +112,38 @@ export default function UserManagementTable() {
                         Manage user roles and access.
                     </p>
                 </div>
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="bg-[rgb(27,55,121)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 transition-colors flex items-center gap-2 text-sm"
-                >
-                    <UserPlus className="w-4 h-4" />
-                    Create Admin
-                </button>
+
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search users..."
+                            className="pl-9 pr-4 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[rgb(27,55,121)] w-64"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="relative">
+                        <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <select
+                            className="pl-9 pr-8 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[rgb(27,55,121)] appearance-none bg-white"
+                            value={filterRole}
+                            onChange={(e) => setFilterRole(e.target.value)}
+                        >
+                            <option value="ALL">All Roles</option>
+                            <option value="user">Users</option>
+                            <option value="admin">Admins</option>
+                        </select>
+                    </div>
+                    <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="bg-[rgb(27,55,121)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 transition-colors flex items-center gap-2 text-sm whitespace-nowrap"
+                    >
+                        <UserPlus className="w-4 h-4" />
+                        Create Admin
+                    </button>
+                </div>
             </header>
 
             {error && (
@@ -116,9 +153,9 @@ export default function UserManagementTable() {
             )}
 
             <div className="bg-white border border-[rgb(27,55,121)]/10 rounded-lg shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto h-[600px] overflow-y-auto relative">
                     <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-[rgb(27,55,121)]/60 uppercase bg-gray-50 border-b border-gray-100">
+                        <thead className="text-xs text-[rgb(27,55,121)]/60 uppercase bg-gray-50 border-b border-gray-100 sticky top-0 z-10 bg-white shadow-sm">
                             <tr>
                                 <th className="px-6 py-3 font-semibold">User</th>
                                 <th className="px-6 py-3 font-semibold">Role</th>
@@ -127,7 +164,7 @@ export default function UserManagementTable() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {users.map((user) => (
+                            {filteredUsers.map((user) => (
                                 <tr key={user._id} className="hover:bg-gray-50/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="font-medium text-[rgb(27,55,121)]">{user.name}</div>

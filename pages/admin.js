@@ -2,9 +2,9 @@ import Head from "next/head";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import Navbar from "../../components/Navbar";
-import AuditLogsTable from "../../components/admin/AuditLogsTable";
-import UserManagementTable from "../../components/admin/UserManagementTable";
+import Navbar from "../components/Navbar";
+import AuditLogsTable from "../components/admin/AuditLogsTable";
+import UserManagementTable from "../components/admin/UserManagementTable";
 import { LayoutDashboard, Users, Shield } from "lucide-react";
 
 export default function AdminDashboard() {
