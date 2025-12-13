@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, Shield, UserPlus, Search, Filter } from "lucide-react";
+import { Users, Shield, UserPlus, Search, Filter, X, MapPin, Phone, Calendar, Mail } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 export default function UserManagementTable() {
@@ -12,6 +12,7 @@ export default function UserManagementTable() {
 
     // Create User Modal State
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null); // For details modal
     const [newAdminData, setNewAdminData] = useState({ name: '', email: '', password: '' });
     const [createLoading, setCreateLoading] = useState(false);
 
@@ -165,7 +166,11 @@ export default function UserManagementTable() {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {filteredUsers.map((user) => (
-                                <tr key={user._id} className="hover:bg-gray-50/50 transition-colors">
+                                <tr
+                                    key={user._id}
+                                    className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                                    onClick={() => setSelectedUser(user)}
+                                >
                                     <td className="px-6 py-4">
                                         <div className="font-medium text-[rgb(27,55,121)]">{user.name}</div>
                                         <div className="text-xs text-gray-500">{user.email}</div>
@@ -180,7 +185,7 @@ export default function UserManagementTable() {
                                     <td className="px-6 py-4 text-gray-500 text-xs">
                                         {new Date(user.createdAt).toLocaleDateString()}
                                     </td>
-                                    <td className="px-6 py-4 text-right">
+                                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                                         {user.role === 'admin' ? (
                                             <button
                                                 onClick={() => handleRoleUpdate(user._id, 'user')}
@@ -262,6 +267,74 @@ export default function UserManagementTable() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* User Details Modal */}
+            {selectedUser && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative" onClick={e => e.stopPropagation()}>
+                        <button
+                            onClick={() => setSelectedUser(null)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-16 h-16 bg-[rgb(27,55,121)]/10 rounded-full flex items-center justify-center text-[rgb(27,55,121)] text-2xl font-serif font-bold">
+                                {selectedUser.name?.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-semibold text-gray-900">{selectedUser.name}</h2>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1
+                                    ${selectedUser.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
+                                    {selectedUser.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
+                                    {selectedUser.role || 'user'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="flex items-start gap-3">
+                                <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-medium text-gray-700">Email</p>
+                                    <p className="text-sm text-gray-600">{selectedUser.email}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-medium text-gray-700">Phone</p>
+                                    <p className="text-sm text-gray-600">{selectedUser.phone || 'Not provided'}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-medium text-gray-700">Address</p>
+                                    <p className="text-sm text-gray-600">{selectedUser.address || 'Not provided'}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-medium text-gray-700">Joined</p>
+                                    <p className="text-sm text-gray-600">
+                                        {new Date(selectedUser.createdAt).toLocaleDateString()} at {new Date(selectedUser.createdAt).toLocaleTimeString()}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t mt-4">
+                                <p className="text-xs text-gray-400 font-mono">ID: {selectedUser._id}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
