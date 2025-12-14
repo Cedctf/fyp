@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Navbar from '../../components/Navbar';
-import { Calendar, Clock, ArrowRight, BookOpen, Search, ChevronDown, Check } from 'lucide-react';
+import { Calendar, Clock, ArrowRight, BookOpen, Search, ChevronDown, Check, Plus } from 'lucide-react';
 import { ARTICLES } from '../../data/articles';
 import {
     DropdownMenu,
@@ -149,6 +149,17 @@ export default function EducationPage() {
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
+
+                            {/* Post Button */}
+                            <Link href="/education/new">
+                                <button
+                                    className="flex items-center gap-2 bg-[rgb(27,55,121)] text-white px-6 py-2 rounded-full text-sm font-sans font-medium hover:bg-[rgb(20,40,90)] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                    aria-label="Post new article"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    <span>Post Article</span>
+                                </button>
+                            </Link>
                         </div>
                     </div>
                 </section>
