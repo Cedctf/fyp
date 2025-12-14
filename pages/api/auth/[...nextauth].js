@@ -4,6 +4,7 @@ import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { getUsersCollection } from "@/lib/mongodb";
+import { logActivity } from "@/lib/audit";
 
 async function getUserByEmail(email) {
   const usersCollection = await getUsersCollection();
@@ -56,6 +57,7 @@ export const authOptions = {
           name: user.name,
           address: user.address,
           phone: user.phone,
+          role: user.role || 'user',
         };
       }
     })
@@ -78,6 +80,7 @@ export const authOptions = {
       if (trigger === "update" && session) {
         token.address = session.user.address;
         token.phone = session.user.phone;
+        token.role = session.user.role;
         return token;
       }
 
@@ -87,6 +90,7 @@ export const authOptions = {
         token.name = user.name;
         token.address = user.address;
         token.phone = user.phone;
+        token.role = user.role || 'user';
 
         // For OAuth, fetch the user from DB to get the correct _id and additional info
         if (account && (account.provider === "google" || account.provider === "github")) {
@@ -95,6 +99,7 @@ export const authOptions = {
             token.id = dbUser._id.toString();
             token.address = dbUser.address;
             token.phone = dbUser.phone;
+            token.role = dbUser.role || 'user';
           }
         } else {
           // For credentials, user.id is already set correctly in authorize
@@ -119,6 +124,7 @@ export const authOptions = {
         session.user.name = token.name;
         session.user.address = token.address;
         session.user.phone = token.phone;
+        session.user.role = token.role;
         session.accessToken = token.accessToken;
       }
 
@@ -143,6 +149,12 @@ export const authOptions = {
               providerId: account.providerAccountId,
               createdAt: new Date(),
               updatedAt: new Date(),
+              role: 'user',
+            });
+
+            await logActivity(result.insertedId, "USER_SIGNUP_OAUTH", "auth", {
+              provider: account.provider,
+              email: user.email
             });
           } else {
             // Update last login time
@@ -151,6 +163,10 @@ export const authOptions = {
               { email: user.email.toLowerCase() },
               { $set: { updatedAt: new Date() } }
             );
+
+            await logActivity(existingUser._id, "USER_LOGIN_OAUTH", "auth", {
+              provider: account.provider
+            });
           }
         } catch (error) {
           console.error('Error saving OAuth user:', error);

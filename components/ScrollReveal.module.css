@@ -1,0 +1,15 @@
+.scrollReveal {
+    position: relative;
+    overflow: hidden;
+}
+
+.scrollRevealText {
+    /* Ensure text doesn't collapse */
+    position: relative;
+}
+
+.word {
+    display: inline-block;
+    white-space: pre-wrap;
+    will-change: transform, opacity, filter;
+}

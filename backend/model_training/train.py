@@ -1,143 +1,183 @@
-# file: model_training/train.py
+# backend/reporting/weekly_report.py
 
-import pandas as pd
+import json
+import os
+import argparse
+
 import numpy as np
-import joblib 
+import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 
-# ==========================================
-# 1. LOAD DATA
-# ==========================================
-print("--- STEP 1: Loading Data ---")
-filename = 'ultimate_combined_data.csv'
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Image,
+    Table,
+    TableStyle,
+)
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.units import inch
 
-try:
-    df = pd.read_csv(filename)
-    print("✅ Data Loaded Successfully!")
-except FileNotFoundError:
-    print("❌ Error: File not found. Please make sure 'ultimate_combined_data.csv' is in this folder.")
-    exit()
 
-# ==========================================
-# 2. TRAIN THE MODEL
-# ==========================================
-print("\n--- STEP 2: Training Model ---")
-# Filter for unique Grid/Week combinations
-train_df = df.drop_duplicates(subset=['Grid_ID', 'Week']).copy()
+# ==============================
+# LOAD DATA
+# ==============================
+def load_csv(csv_path):
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"CSV not found: {csv_path}")
+    return pd.read_csv(csv_path)
 
-features = ['Rainfall_Index', 'Urban_Density', 'Prev_Week_Was_Outbreak']
-target = 'Target_Case_Next_Week'
 
-# Split into Train (Weeks 1-40) and Test (Weeks 41-52)
-train_set = train_df[train_df['Week'] <= 40]
-test_set = train_df[train_df['Week'] > 40]
+def load_predictions(json_path):
+    if not os.path.exists(json_path):
+        raise FileNotFoundError(f"Prediction JSON not found: {json_path}")
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return pd.DataFrame(data)
 
-X_train = train_set[features]
-y_train = train_set[target]
-X_test = test_set[features]
-y_test = test_set[target]
 
-model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
-model.fit(X_train, y_train)
-print("✅ Model Trained!")
+# ==============================
+# HOTSPOT DETECTION
+# ==============================
+def detect_hotspots(df):
+    mean_w = df["weight"].mean()
+    std_w = df["weight"].std(ddof=0)
+    threshold = mean_w + std_w
 
-# ==========================================
-# 3. SAVE THE MODEL (Crucial for Next.js)
-# ==========================================
-print("\n--- STEP 3: Saving Model ---")
-output_path = '../dengue_model.pkl' # Saves to your backend folder
-joblib.dump(model, output_path)
-print(f"✅ Model saved to: {output_path}")
+    df["is_hotspot"] = df["weight"] >= threshold
+    df["threshold"] = threshold
+    return df
 
-# ==========================================
-# 4. EVALUATE METRICS
-# ==========================================
-print("\n--- STEP 4: Evaluation ---")
-y_pred = model.predict(X_test)
 
-acc = accuracy_score(y_test, y_pred)
-print(f"Model Accuracy: {acc*100:.2f}%")
+# ==============================
+# PLOTS
+# ==============================
+def plot_weekly_trend(hist_df, week, out_path):
+    trend = hist_df.groupby("Week").size().sort_index()
 
-# Note: In VS Code, we usually skip plt.show() because it blocks the terminal,
-# but the calculation is done here to ensure it works.
+    plt.figure(figsize=(8, 4))
+    plt.plot(trend.index, trend.values, marker="o")
+    plt.axvline(week, color="red", linestyle="--", label=f"Week {week}")
+    plt.title("Weekly Dengue Case Trend (Historical)")
+    plt.xlabel("Week")
+    plt.ylabel("Total Cases")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150)
+    plt.close()
 
-# ==========================================
-# 5. SMART LOCATION SEARCH (Your Logic)
-# ==========================================
-known_locations = df[['Latitude', 'Longitude', 'District', 'Urban_Density']].dropna().copy()
-known_locations = known_locations.drop_duplicates(subset=['Latitude', 'Longitude'])
 
-def find_nearest_location(lat, long):
-    distances = np.sqrt(
-        (known_locations['Latitude'] - lat)**2 +
-        (known_locations['Longitude'] - long)**2
-    )
-    closest_idx = distances.idxmin()
-    min_dist = distances.min()
-    closest_point = known_locations.loc[closest_idx]
+def plot_hotspot_map(pred_df, out_path):
+    plt.figure(figsize=(6, 6))
 
-    if min_dist > 0.1: 
-        return None, None
-    return closest_point['District'], closest_point['Urban_Density']
+    normal = pred_df[~pred_df["is_hotspot"]]
+    hotspot = pred_df[pred_df["is_hotspot"]]
 
-# ==========================================
-# 6. PREDICTION FUNCTION
-# ==========================================
-def predict_dengue_risk(lat, long, date_str, force_outbreak_history=None):
-    try:
-        # 1. Prepare Date & Grid
-        week_num = pd.to_datetime(date_str, dayfirst=True).isocalendar().week
-        grid_id = f"{round(lat, 2)}_{round(long, 2)}"
+    plt.scatter(normal["lng"], normal["lat"], s=30, alpha=0.4, label="Normal")
+    plt.scatter(hotspot["lng"], hotspot["lat"], s=60, color="red", label="Hotspot")
 
-        # 2. Location Logic
-        loc_data = df[df['Grid_ID'] == grid_id]
+    plt.title("Predicted Dengue Hotspot Map")
+    plt.xlabel("Longitude")
+    plt.ylabel("Latitude")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150)
+    plt.close()
 
-        if not loc_data.empty:
-            urban_density = loc_data['Urban_Density'].iloc[0]
-            valid_districts = loc_data['District'].dropna()
-            location_name = valid_districts.mode()[0] if not valid_districts.empty else "Known Area"
-            hist_row = loc_data[loc_data['Week'] == week_num]
-            real_history = hist_row['Prev_Week_Was_Outbreak'].iloc[0] if not hist_row.empty else 0
-        else:
-            nearest_district, nearest_density = find_nearest_location(lat, long)
-            if nearest_district:
-                location_name = f"{nearest_district} (Nearby)"
-                urban_density = nearest_density
-                real_history = 0
-            else:
-                location_name = "Unknown Area"
-                urban_density = 0.5
-                real_history = 0
 
-        # 3. Weather
-        rainfall = 0.5 + 0.5*np.sin((week_num-10)*2*np.pi/26)
+# ==============================
+# PDF GENERATION
+# ==============================
+def build_pdf(week, pred_df, trend_img, map_img, out_pdf):
+    styles = getSampleStyleSheet()
+    doc = SimpleDocTemplate(out_pdf, pagesize=A4)
+    story = []
 
-        # 4. Predict
-        history_input = force_outbreak_history if force_outbreak_history is not None else real_history
-        input_data = pd.DataFrame([[rainfall, urban_density, history_input]],
-                                  columns=['Rainfall_Index', 'Urban_Density', 'Prev_Week_Was_Outbreak'])
+    story.append(Paragraph(
+        f"Dengue Weekly Hotspot Report – Week {week}",
+        styles["Title"]
+    ))
+    story.append(Spacer(1, 12))
 
-        prob = model.predict_proba(input_data)[0][1]
+    total_risk = pred_df["weight"].sum()
+    avg_risk = pred_df["weight"].mean()
+    hotspot_count = pred_df["is_hotspot"].sum()
+    threshold = pred_df["threshold"].iloc[0]
 
-        # 5. Risk Label
-        if prob < 0.30:
-            risk_label = "🟢 LOW RISK"
-        elif prob < 0.70:
-            risk_label = "🟡 MEDIUM RISK"
-        else:
-            risk_label = "🔴 HIGH RISK"
+    summary = [
+        f"Total Predicted Risk: {total_risk:.2f}",
+        f"Average Grid Risk: {avg_risk:.2f}",
+        f"Hotspot Threshold (Mean + Std): {threshold:.2f}",
+        f"Number of Hotspot Grids: {hotspot_count}",
+    ]
 
-        return f"Prediction for {location_name} on {date_str}: {risk_label} ({prob*100:.1f}%)"
+    for line in summary:
+        story.append(Paragraph(line, styles["Normal"]))
 
-    except Exception as e:
-        return f"Error: {e}"
+    story.append(Spacer(1, 12))
 
-# ==========================================
-# 7. RUN TESTS (To verify it works)
-# ==========================================
-print("\n--- STEP 7: Running Tests ---")
-print(predict_dengue_risk(3.21, 101.63, "29/06/2026"))
-print(predict_dengue_risk(3.14, 101.70, "11/11/2025", force_outbreak_history=1))
+    story.append(Paragraph("Historical Weekly Trend", styles["Heading2"]))
+    story.append(Image(trend_img, width=5.5 * inch, height=3 * inch))
+    story.append(Spacer(1, 12))
+
+    story.append(Paragraph("Predicted Spatial Hotspots", styles["Heading2"]))
+    story.append(Image(map_img, width=5.5 * inch, height=5 * inch))
+    story.append(Spacer(1, 12))
+
+    story.append(Paragraph("Hotspot Grid Summary", styles["Heading2"]))
+
+    hotspots = pred_df[pred_df["is_hotspot"]].sort_values("weight", ascending=False)
+
+    if hotspots.empty:
+        story.append(Paragraph("No hotspots detected.", styles["Normal"]))
+    else:
+        table_data = [["#", "Latitude", "Longitude", "Risk Weight"]]
+        for i, r in enumerate(hotspots.itertuples(), start=1):
+            table_data.append([i, f"{r.lat:.5f}", f"{r.lng:.5f}", f"{r.weight:.2f}"])
+
+        table = Table(table_data)
+        table.setStyle(TableStyle([
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ]))
+        story.append(table)
+
+    doc.build(story)
+
+
+# ==============================
+# MAIN
+# ==============================
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--week", type=int, required=True)
+    parser.add_argument("--predictions", default="public/heatmap_data.json")
+    parser.add_argument("--csv", default="public/ultimate_combined_data.csv")
+    parser.add_argument("--outdir", default="public/reports")
+    args = parser.parse_args()
+
+    os.makedirs(args.outdir, exist_ok=True)
+
+    hist_df = load_csv(args.csv)
+    pred_df = load_predictions(args.predictions)
+    pred_df = detect_hotspots(pred_df)
+
+    trend_img = os.path.join(args.outdir, f"week_{args.week}_trend.png")
+    map_img = os.path.join(args.outdir, f"week_{args.week}_map.png")
+    pdf_path = os.path.join(args.outdir, f"dengue_week_{args.week}_report.pdf")
+
+    plot_weekly_trend(hist_df, args.week, trend_img)
+    plot_hotspot_map(pred_df, map_img)
+    build_pdf(args.week, pred_df, trend_img, map_img, pdf_path)
+
+    print(f"Report generated: {pdf_path}")
+
+
+if __name__ == "__main__":
+    main()
