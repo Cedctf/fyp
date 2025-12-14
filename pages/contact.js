@@ -263,7 +263,7 @@ export default function Contact() {
                                         <img
                                             src="/contact/DrHadi.jpeg"
                                             className="w-full h-full object-cover"
-                                            alt="Dr. Alan Grant"
+                                            alt="Dr. Hadi"
                                         />
                                     </div>
 
@@ -277,19 +277,21 @@ export default function Contact() {
                                         <div className="w-full h-[1px] bg-[rgb(27,55,121)]/20 mb-4"></div>
 
                                         {/* Contact Details */}
-                                        <div className="flex items-center gap-6 mb-4">
+                                        {/* Updated Spacing */}
+                                        <div className="flex items-center gap-3 mb-4">
                                             <a href="https://www.linkedin.com/in/abdulhadimohamad/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-[rgb(27,55,121)] transition-colors">
-                                                <Linkedin className="w-6 h-6" />
+                                                <Linkedin className="w-5 h-5" />
                                             </a>
                                             <a href="mailto:abdulhadi.mohamad@taylors.edu.my" className="text-slate-400 hover:text-[rgb(27,55,121)] transition-colors">
-                                                <Mail className="w-6 h-6" />
+                                                <Mail className="w-5 h-5" />
                                             </a>
                                         </div>
 
                                         {/* Bio */}
                                         <div className="text-slate-600 leading-relaxed text-lg max-w-lg">
                                             <p className="mb-4">
-                                                Dr. Abdul Hadi Mohammad plays a pivotal role in the DOPEWS-MY project, providing the strategic oversight needed to fuse academic research with industrial innovation. He brings broad-ranging expertise in Data Analytics, Software Engineering, and Public Health, guiding our team to ensure the system meets rigorous professional standards and effectively bridges the gap between theoretical modeling and real-world application.
+                                                Dr. Abdul Hadi Mohammad plays a pivotal role in the DOPEWS-MY project, providing the strategic oversight needed to fuse academic research with industrial innovation.
+                                                He brings broad-ranging expertise in Data Analytics, Software Engineering, and Public Health, guiding our team to ensure the system meets rigorous professional standards and effectively bridges the gap between theoretical modeling and real-world application.
                                             </p>
                                         </div>
                                     </div>
