@@ -15,24 +15,19 @@ export default async function handler(req, res) {
     try {
       const settings = await getUserSettings(userId);
       return res.status(200).json({
-        locationAccessEnabled: settings.locationAccessEnabled || false,
         alertAccessEnabled: settings.alertAccessEnabled || false
       });
     } catch (error) {
-      console.error('Error fetching location settings:', error);
-      return res.status(500).json({ message: 'Failed to fetch location settings' });
+      console.error('Error fetching alert settings:', error);
+      return res.status(500).json({ message: 'Failed to fetch alert settings' });
     }
   }
 
   if (req.method === 'PUT') {
     try {
-      const { locationAccessEnabled, alertAccessEnabled } = req.body;
+      const { alertAccessEnabled } = req.body;
 
       const updateData = {};
-
-      if (typeof locationAccessEnabled === 'boolean') {
-        updateData.locationAccessEnabled = locationAccessEnabled;
-      }
 
       if (typeof alertAccessEnabled === 'boolean') {
         updateData.alertAccessEnabled = alertAccessEnabled;
@@ -42,8 +37,8 @@ export default async function handler(req, res) {
 
       return res.status(200).json({ message: 'Settings updated successfully' });
     } catch (error) {
-      console.error('Error updating location settings:', error);
-      return res.status(500).json({ message: 'Failed to update location settings' });
+      console.error('Error updating alert settings:', error);
+      return res.status(500).json({ message: 'Failed to update alert settings' });
     }
   }
 

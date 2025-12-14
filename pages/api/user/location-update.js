@@ -32,15 +32,15 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: 'Invalid longitude' });
     }
 
-    // Check if user has location tracking enabled
+    // Check if user has alert access enabled
     const db = await getDatabase();
     const settingsCollection = db.collection('user_settings');
     const userIdStr = typeof userId === 'string' ? userId : userId.toString();
     
     const settings = await settingsCollection.findOne({ userId: userIdStr });
     
-    if (!settings || !settings.locationAccessEnabled || !settings.alertAccessEnabled) {
-      return res.status(403).json({ message: 'Location tracking is not enabled' });
+    if (!settings || !settings.alertAccessEnabled) {
+      return res.status(403).json({ message: 'Alert access is not enabled' });
     }
 
     // Save location update to location_history collection
