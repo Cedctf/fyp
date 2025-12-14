@@ -21,7 +21,7 @@ export default async function handler(req, res) {
         const db = await getDatabase();
         const collection = db.collection('dengue_cases');
 
-        const { date, start_date, end_date, district, limit = 100 } = req.query;
+        const { date, start_date, end_date, district, area, limit = 5 } = req.query;
         const query = {};
 
         // Date filtering
@@ -43,12 +43,22 @@ export default async function handler(req, res) {
             if (end_date) query.Visit_Date.$lte = new Date(end_date);
         }
 
-        // District filtering
-        if (district) {
+        // District/Area filtering
+        if (area) {
+            query.District = area;
+        } else if (district) {
             query.District = district;
         }
 
-        const cases = await collection.find(query).limit(parseInt(limit)).toArray();
+        let cursor = collection.find(query);
+
+        // Apply limit if not 0 (0 means unlimited)
+        const limitNum = parseInt(limit);
+        if (limitNum > 0) {
+            cursor = cursor.limit(limitNum);
+        }
+
+        const cases = await cursor.toArray();
 
         return res.status(200).json({
             message: "Success",
