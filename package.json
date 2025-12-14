@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint"
   },
-  "resolutions": {
+  "overrides": {
     "styled-components": "^6.1.19"
   },
   "dependencies": {
