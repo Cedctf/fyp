@@ -51,7 +51,7 @@ export default function App({
     return () => window.removeEventListener('resize', adjustFooterReveal);
   }, [router.pathname]);
 
-  const showFooter = !['/', '/dengue-heatmap', '/api-dashboard', '/auth/signin', '/auth/signup', '/profile'].includes(router.pathname);
+  const showFooter = !['/', '/dengue-heatmap', '/api-dashboard', '/auth/signin', '/auth/signup', '/profile', '/education/new'].includes(router.pathname);
 
   return (
     <SessionProvider session={session}>
