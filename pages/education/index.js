@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Navbar from '../../components/Navbar';
 import { Calendar, Clock, ArrowRight, BookOpen, Search, ChevronDown, Check, Plus } from 'lucide-react';
 import { ARTICLES } from '../../data/articles';
+import { getArticlesCollection } from '../../lib/mongodb';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,13 +21,16 @@ const SORT_OPTIONS = [
     { value: "readTimeDesc", label: "Reading Time (Longest)" },
 ];
 
-export default function EducationPage() {
+export default function EducationPage({ dbArticles = [] }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [sortBy, setSortBy] = useState("newest"); // newest, oldest, readTimeAsc, readTimeDesc
 
+    // Combine static and dynamic articles
+    const allArticles = [...dbArticles, ...ARTICLES];
+
     // Filter Logic
-    const filteredArticles = ARTICLES.filter(article => {
+    const filteredArticles = allArticles.filter(article => {
         const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             article.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = selectedCategory === "All" || article.category.toLowerCase() === selectedCategory.toLowerCase();
@@ -349,4 +353,38 @@ export default function EducationPage() {
             </main >
         </div >
     );
+}
+
+export async function getServerSideProps() {
+    try {
+        const collection = await getArticlesCollection();
+        const articles = await collection.find({ status: 'approved' })
+            .sort({ createdAt: -1 })
+            .toArray();
+
+        // Serialize for Next.js props
+        const serializedArticles = articles.map(article => ({
+            ...article,
+            _id: article._id.toString(),
+            createdAt: article.createdAt.toISOString(),
+            // Map DB fields to UI fields if needed
+            id: article._id.toString(),
+            date: article.date || new Date(article.createdAt).toLocaleDateString(),
+            image: article.imageUrl || null,
+            readTime: article.readTime || '5 min read'
+        }));
+
+        return {
+            props: {
+                dbArticles: serializedArticles,
+            },
+        };
+    } catch (error) {
+        console.error("Error fetching articles:", error);
+        return {
+            props: {
+                dbArticles: [],
+            },
+        };
+    }
 }

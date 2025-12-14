@@ -71,16 +71,28 @@ export default function NewArticlePage() {
         setFormData(prev => ({ ...prev, category: value }));
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Simulate API call
-        setTimeout(() => {
-            console.log("Submitted Article:", formData);
+        try {
+            const res = await fetch('/api/education/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+
+            if (res.ok) {
+                setSubmitted(true);
+            } else {
+                console.error("Submission failed");
+                // Ideally show error toast here
+            }
+        } catch (error) {
+            console.error("Error submitting article:", error);
+        } finally {
             setIsSubmitting(false);
-            setSubmitted(true);
-        }, 1500);
+        }
     };
 
     const handleFormat = (type) => {
