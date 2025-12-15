@@ -271,21 +271,24 @@ export default function Contact() {
                                     <div className="flex flex-col h-full">
                                         {/* Name & Role */}
                                         <h3 className="text-5xl md:text-6xl font-serif text-[rgb(27,55,121)] mb-2">Dr. Abdul Hadi<br />Mohammad</h3>
-                                        <p className="text-xl text-slate-500 font-serif italic mb-4">Project Supervisor</p>
+                                        <div className="flex justify-between items-end mb-4">
+                                            <p className="text-xl text-slate-500 font-serif italic">Project Supervisor</p>
+                                            <div className="flex items-center gap-3">
+                                                <a href="https://www.linkedin.com/in/abdulhadimohamad/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-[rgb(27,55,121)] transition-colors">
+                                                    <Linkedin className="w-5 h-5" />
+                                                </a>
+                                                <a href="mailto:abdulhadi.mohamad@taylors.edu.my" className="text-slate-400 hover:text-[rgb(27,55,121)] transition-colors">
+                                                    <Mail className="w-5 h-5" />
+                                                </a>
+                                            </div>
+                                        </div>
 
                                         {/* Divider */}
                                         <div className="w-full h-[1px] bg-[rgb(27,55,121)]/20 mb-4"></div>
 
                                         {/* Contact Details */}
                                         {/* Updated Spacing */}
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <a href="https://www.linkedin.com/in/abdulhadimohamad/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-[rgb(27,55,121)] transition-colors">
-                                                <Linkedin className="w-5 h-5" />
-                                            </a>
-                                            <a href="mailto:abdulhadi.mohamad@taylors.edu.my" className="text-slate-400 hover:text-[rgb(27,55,121)] transition-colors">
-                                                <Mail className="w-5 h-5" />
-                                            </a>
-                                        </div>
+
 
                                         {/* Bio */}
                                         <div className="text-slate-600 leading-relaxed text-lg max-w-lg">
