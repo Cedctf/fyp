@@ -108,9 +108,9 @@ export default function ApiDashboard() {
             <main className="container mx-auto px-4 pt-24 pb-16">
                 <section className="mb-20 mt-8 text-left">
                     <h1 className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight border-none">
-                        API Management
+                        API Management Dashboard
                         <br />
-                        <span className="text-3xl font-normal font-[family-name:var(--font-inter)] block mt-2">Manage your API keys and test your integration with our public endpoints.</span>
+                        <span className="text-3xl font-normal font-[family-name:var(--font-inter)] block mt-2">Enabling Seamless Integration Through Secure and Reliable APIs</span>
                     </h1>
                 </section>
 

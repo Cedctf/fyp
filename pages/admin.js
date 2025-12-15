@@ -81,7 +81,7 @@ export default function AdminDashboard() {
                     <h1 className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight">
                         Admin Dashboard
                         <br />
-                        <span className="text-3xl font-normal font-[family-name:var(--font-inter)] block mt-2">Manage your application users and security.</span>
+                        <span className="text-3xl font-normal font-[family-name:var(--font-inter)] block mt-2">Enabling Secure User Management Through Control and Insight</span>
                     </h1>
                 </section>
 
