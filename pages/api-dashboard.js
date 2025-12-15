@@ -99,7 +99,7 @@ export default function ApiDashboard() {
     return (
         <div className="min-h-screen bg-white text-[rgb(27,55,121)] font-sans">
             <Head>
-                <title>API Dashboard</title>
+                <title>API Management Dashboard</title>
                 <meta name="description" content="Manage your API keys and test your integration" />
             </Head>
 
