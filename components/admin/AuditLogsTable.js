@@ -63,19 +63,19 @@ export default function AuditLogsTable({ searchTerm, filterType }) {
             <div className="w-full overflow-hidden">
                 <div className="overflow-x-auto h-[600px] overflow-y-auto">
                     <table className="w-full">
-                        <thead>
+                        <thead className="border-b border-[rgb(27,55,121)]/20">
                             <tr>
-                                <th className="pl-0 pr-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Timestamp</th>
+                                <th className="pl-4 pr-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Timestamp</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Action</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">User ID</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Resource</th>
-                                <th className="pl-6 pr-0 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Details</th>
+                                <th className="pl-6 pr-4 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Details</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredLogs.map((log) => (
-                                <tr key={log._id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="pl-0 pr-6 py-4 whitespace-nowrap">
+                            {filteredLogs.map((log, index) => (
+                                <tr key={log._id} className={`hover:bg-[rgb(27,55,121)]/10 transition-colors duration-200 ${index % 2 === 0 ? '' : 'bg-[rgb(27,55,121)]/5'}`}>
+                                    <td className="pl-4 pr-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-[rgb(27,55,121)]">
                                             {new Date(log.timestamp).toLocaleString()}
                                         </div>
@@ -98,7 +98,7 @@ export default function AuditLogsTable({ searchTerm, filterType }) {
                                             {log.resource}
                                         </div>
                                     </td>
-                                    <td className="pl-6 pr-0 py-4 whitespace-nowrap">
+                                    <td className="pl-6 pr-4 py-4 whitespace-nowrap">
                                         <div className="text-xs font-mono text-[rgb(27,55,121)]/50 max-w-xs truncate">
                                             {JSON.stringify(log.details)}
                                         </div>

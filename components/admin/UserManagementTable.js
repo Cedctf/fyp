@@ -130,24 +130,24 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
             <div className="w-full overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead>
+                        <thead className="border-b border-[rgb(27,55,121)]/20">
                             <tr>
-                                <th className="pl-0 pr-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">User</th>
+                                <th className="pl-4 pr-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">User</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Role</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Provider</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Last Active</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Joined</th>
-                                <th className="pl-6 pr-0 py-3 text-right text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Actions</th>
+                                <th className="pl-6 pr-4 py-3 text-right text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredUsers.map((user) => (
+                            {filteredUsers.map((user, index) => (
                                 <tr
                                     key={user._id}
-                                    className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                                    className={`hover:bg-[rgb(27,55,121)]/10 transition-colors duration-200 cursor-pointer ${index % 2 === 0 ? '' : 'bg-[rgb(27,55,121)]/5'}`}
                                     onClick={() => setSelectedUser(user)}
                                 >
-                                    <td className="pl-0 pr-6 py-4 whitespace-nowrap">
+                                    <td className="pl-4 pr-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-[rgb(27,55,121)]">
                                             {user.name}
                                         </div>
@@ -173,7 +173,7 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
                                             {new Date(user.createdAt).toLocaleDateString()}
                                         </div>
                                     </td>
-                                    <td className="pl-6 pr-0 py-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
+                                    <td className="pl-6 pr-4 py-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                                         {user.role === 'admin' ? (
                                             <button
                                                 onClick={() => handleRoleUpdate(user, 'user')}

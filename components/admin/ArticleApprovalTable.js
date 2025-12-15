@@ -91,18 +91,18 @@ export default function ArticleApprovalTable({ searchTerm, selectedCategory, sor
                 <div className="w-full overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full">
-                            <thead>
+                            <thead className="border-b border-[rgb(27,55,121)]/20">
                                 <tr>
-                                    <th className="pl-0 pr-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Article</th>
+                                    <th className="pl-4 pr-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Article</th>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Category</th>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Submitted</th>
-                                    <th className="pl-6 pr-0 py-3 text-right text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Actions</th>
+                                    <th className="pl-6 pr-4 py-3 text-right text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredArticles.map((article) => (
-                                    <tr key={article._id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="pl-0 pr-6 py-4">
+                                {filteredArticles.map((article, index) => (
+                                    <tr key={article._id} className={`hover:bg-[rgb(27,55,121)]/10 transition-colors duration-200 ${index % 2 === 0 ? '' : 'bg-[rgb(27,55,121)]/5'}`}>
+                                        <td className="pl-4 pr-6 py-4">
                                             <div className="font-medium text-[rgb(27,55,121)] mb-1">
                                                 {article.title}
                                             </div>
@@ -120,7 +120,7 @@ export default function ArticleApprovalTable({ searchTerm, selectedCategory, sor
                                                 {new Date(article.createdAt).toLocaleDateString()}
                                             </div>
                                         </td>
-                                        <td className="pl-6 pr-0 py-4 whitespace-nowrap text-right">
+                                        <td className="pl-6 pr-4 py-4 whitespace-nowrap text-right">
                                             <div className="flex items-center justify-end gap-3">
                                                 <button
                                                     onClick={() => handleUpdateStatus(article._id, 'approved')}
