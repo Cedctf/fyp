@@ -11,7 +11,7 @@ OUTPUT_PATH = 'public/heatmap_data.json'
 # Grid Boundaries for Kuala Lumpur (Approximate)
 LAT_MIN, LAT_MAX = 3.03, 3.25
 LONG_MIN, LONG_MAX = 101.60, 101.78
-GRID_STEP = 0.013 # Approx 1.4km (Target: ~240 for 14d, ~120 for 7d, ~500 for 28d)
+GRID_STEP = 0.0115 # Adjusted grid to target ~100-110 cases (7d) and <600 (28d)
 
 TARGET_DATE = (datetime.now() + timedelta(days=7)).strftime("%d/%m/%Y") # Predict for next week
 
