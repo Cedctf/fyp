@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, Shield, UserPlus, X, MapPin, Phone, Calendar, Mail } from "lucide-react";
+import { Users, Shield, UserPlus, X, MapPin, Phone, Calendar, Mail, AlertTriangle } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 export default function UserManagementTable({ searchTerm, filterRole, showCreateModal, setShowCreateModal }) {
@@ -14,6 +14,10 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
 
     // User Details Modal
     const [selectedUser, setSelectedUser] = useState(null);
+
+    const [demoteModalOpen, setDemoteModalOpen] = useState(false);
+    const [userToDemote, setUserToDemote] = useState(null);
+    const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -36,9 +40,19 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
         }
     };
 
-    const handleRoleUpdate = async (userId, newRole) => {
-        if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return;
+    const handleRoleUpdate = (user, newRole) => {
+        if (newRole === 'user') {
+            setUserToDemote(user);
+            setDemoteModalOpen(true);
+        } else {
+            if (confirm(`Are you sure you want to promote this user to Admin?`)) {
+                executeRoleUpdate(user._id, newRole);
+            }
+        }
+    };
 
+    const executeRoleUpdate = async (userId, newRole) => {
+        setActionLoading(true);
         try {
             const res = await fetch('/api/admin/users', {
                 method: 'PATCH',
@@ -47,13 +61,17 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
             });
 
             if (res.ok) {
-                fetchUsers(); // Refresh list
+                fetchUsers();
+                setDemoteModalOpen(false);
+                setUserToDemote(null);
             } else {
                 const data = await res.json();
                 alert(data.error || "Failed to update role");
             }
         } catch (err) {
             alert("Network error");
+        } finally {
+            setActionLoading(false);
         }
     };
 
@@ -116,6 +134,8 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
                             <tr>
                                 <th className="pl-0 pr-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">User</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Role</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Provider</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Last Active</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Joined</th>
                                 <th className="pl-6 pr-0 py-3 text-right text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Actions</th>
                             </tr>
@@ -134,11 +154,19 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
                                         <div className="text-xs text-[rgb(27,55,121)]/70">{user.email}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`text-xs font-semibold flex items-center gap-1
-                                            ${user.role === 'admin' ? 'text-purple-600' : 'text-gray-600'}`}>
-                                            {user.role === 'admin' && <Shield className="w-3 h-3" />}
+                                        <span className="text-xs font-semibold text-[rgb(27,55,121)]">
                                             {user.role === 'admin' ? 'Admin' : 'User'}
                                         </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-[rgb(27,55,121)]/70 capitalize">
+                                            {user.provider || 'email'}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-[rgb(27,55,121)]/70">
+                                            {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'Never'}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-[rgb(27,55,121)]/70">
@@ -148,7 +176,7 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
                                     <td className="pl-6 pr-0 py-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                                         {user.role === 'admin' ? (
                                             <button
-                                                onClick={() => handleRoleUpdate(user._id, 'user')}
+                                                onClick={() => handleRoleUpdate(user, 'user')}
                                                 className="text-red-600 hover:text-red-800 text-xs font-medium transition-colors"
                                                 disabled={user._id === session?.user?.id}
                                             >
@@ -156,7 +184,7 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
                                             </button>
                                         ) : (
                                             <button
-                                                onClick={() => handleRoleUpdate(user._id, 'admin')}
+                                                onClick={() => handleRoleUpdate(user, 'admin')}
                                                 className="text-[rgb(27,55,121)] hover:text-[rgb(27,55,121)]/80 text-xs font-medium transition-colors"
                                             >
                                                 Promote
@@ -172,8 +200,8 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
 
             {/* Create Admin Modal */}
             {showCreateModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowCreateModal(false)}>
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
                         <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                             <UserPlus className="w-5 h-5" />
                             Create New Admin
@@ -231,6 +259,37 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
                 </div>
             )}
 
+            {/* Demote User Modal */}
+            {demoteModalOpen && userToDemote && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setDemoteModalOpen(false)}>
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+                        <h2 className="text-xl font-semibold mb-2 flex items-center gap-2 text-[rgb(27,55,121)]">
+                            <AlertTriangle className="w-5 h-5" />
+                            Demote Admin?
+                        </h2>
+                        <p className="text-gray-600 mb-6">
+                            Are you sure you want to demote <span className="font-semibold text-gray-900">{userToDemote.name}</span> to a regular user? They will lose all administrative privileges.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setDemoteModalOpen(false)}
+                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium"
+                                disabled={actionLoading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => executeRoleUpdate(userToDemote._id, 'user')}
+                                disabled={actionLoading}
+                                className="px-4 py-2 bg-[rgb(27,55,121)] text-white rounded-md hover:bg-[rgb(27,55,121)]/90 text-sm font-medium"
+                            >
+                                {actionLoading ? 'Demoting...' : 'Demote'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* User Details Modal */}
             {selectedUser && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
@@ -248,10 +307,8 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
                             </div>
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-900">{selectedUser.name}</h2>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1
-                                    ${selectedUser.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
-                                    {selectedUser.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
-                                    {selectedUser.role || 'user'}
+                                <span className="text-xs font-semibold text-[rgb(27,55,121)] mt-1 block">
+                                    {selectedUser.role === 'admin' ? 'Admin' : 'User'}
                                 </span>
                             </div>
                         </div>
