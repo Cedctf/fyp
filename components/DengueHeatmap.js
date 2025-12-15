@@ -197,7 +197,7 @@ const DengueHeatmap = () => {
     // 3. Current Points for Heatmap Layer (VISUAL ONLY)
     const currentPoints = useMemo(() => {
         // Use manual threshold for visual filtering
-        const threshold = dataSource === 'predicted' ? manualThreshold : 2;
+        const threshold = dataSource === 'predicted' ? manualThreshold : 1;
 
         return filteredRawData
             .filter(point => (point.weight || 0) >= threshold)
