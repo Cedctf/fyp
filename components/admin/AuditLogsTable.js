@@ -61,7 +61,7 @@ export default function AuditLogsTable({ searchTerm, filterType }) {
             )}
 
             <div className="w-full overflow-hidden">
-                <div className="overflow-x-auto h-[600px] overflow-y-auto">
+                <div className="overflow-x-auto h-[600px] overflow-y-auto no-scrollbar">
                     <table className="w-full">
                         <thead className="border-b border-[rgb(27,55,121)]/20">
                             <tr>

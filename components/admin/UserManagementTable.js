@@ -128,7 +128,7 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
             )}
 
             <div className="w-full overflow-hidden">
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto no-scrollbar">
                     <table className="w-full">
                         <thead className="border-b border-[rgb(27,55,121)]/20">
                             <tr>
