@@ -220,7 +220,7 @@ export default function Contact() {
                         <div className="grid grid-cols-1 gap-12 items-start">
                             {/* Top: Big Title */}
                             <div className="relative">
-                                <h1 className="text-6xl md:text-8xl font-serif leading-none reveal-text text-[rgb(27,55,121)]">
+                                <h1 className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight reveal-text">
                                     Meet<br />&nbsp;&nbsp;&nbsp;/<span className="text-[rgb(27,55,121)]/50 italic">Our Team</span>
                                 </h1>
                             </div>

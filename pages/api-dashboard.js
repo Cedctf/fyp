@@ -106,17 +106,15 @@ export default function ApiDashboard() {
             <Navbar />
 
             <main className="container mx-auto px-4 pt-24 pb-16">
-                <header className="mb-12 mt-8">
-                    <h1 className="text-4xl md:text-5xl font-serif tracking-tight border-none">
+                <section className="mb-20 mt-8 text-left">
+                    <h1 className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight border-none">
                         API Management
+                        <br />
+                        <span className="text-3xl font-normal font-[family-name:var(--font-inter)] block mt-2">Manage your API keys and test your integration with our public endpoints.</span>
                     </h1>
-                    <p className="text-[rgb(27,55,121)]/70 mt-3">
-                        Manage your API keys and test your integration with our public endpoints.
-                    </p>
-                    <div className="h-px bg-[rgb(27,55,121)]/15 mt-6" />
-                </header>
+                </section>
 
-                <section className="space-y-10">
+                <section className="space-y-10 pt-10 border-t border-[rgb(27,55,121)]/10">
                     {/* API Key Management */}
                     <ApiKeyManager />
 

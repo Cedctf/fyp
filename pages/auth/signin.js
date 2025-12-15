@@ -67,7 +67,7 @@ export default function SignIn() {
 
       <main className="container mx-auto px-4 pt-24 pb-16">
         <header className="mb-12 mt-8">
-          <h1 className="text-4xl md:text-5xl font-serif tracking-tight border-none">
+          <h1 className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight border-none">
             Sign In
           </h1>
           <p className="text-[rgb(27,55,121)]/70 mt-3">

@@ -73,7 +73,7 @@ export default function EducationPage({ dbArticles = [] }) {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight"
                     >
-                        Dengue Education Hub:
+                        Dengue Education Hub
                         <br />
                         <span className="text-3xl font-normal font-[family-name:var(--font-inter)] block mt-2">Empowering Prevention with Knowledge and Innovation</span>
                     </motion.h1>

@@ -77,17 +77,16 @@ export default function AdminDashboard() {
             <Navbar />
 
             <main className="container mx-auto px-4 pt-24 pb-16">
-                <header className="mb-8">
-                    <h1 className="text-3xl font-serif font-semibold flex items-center gap-3">
+                <section className="mb-20 mt-8 text-left max-w-4xl">
+                    <h1 className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight">
                         Admin Dashboard
+                        <br />
+                        <span className="text-3xl font-normal font-[family-name:var(--font-inter)] block mt-2">Manage your application users and security.</span>
                     </h1>
-                    <p className="text-[rgb(27,55,121)]/70 mt-2">
-                        Manage your application users and security.
-                    </p>
-                </header>
+                </section>
 
                 {/* Tabs & Controls Container */}
-                <div className="flex flex-col xl:flex-row items-end xl:items-center justify-between border-b border-gray-200 mb-8 gap-4">
+                <div className="flex flex-col xl:flex-row items-end xl:items-center justify-between pt-10 border-t border-[rgb(27,55,121)]/10 mb-8 gap-4">
 
                     {/* Tabs */}
                     <div className="flex w-full xl:w-auto overflow-x-auto no-scrollbar relative">
@@ -306,7 +305,7 @@ export default function AdminDashboard() {
                     )}
                     {activeTab === 'audit' && (
                         <AuditLogsTable
-                            searchTerm={searchTerm} 
+                            searchTerm={searchTerm}
                             filterType={auditFilter}
                         />
                     )}
