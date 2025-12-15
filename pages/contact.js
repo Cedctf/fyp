@@ -220,7 +220,7 @@ export default function Contact() {
                         <div className="grid grid-cols-1 gap-12 items-start">
                             {/* Top: Big Title */}
                             <div className="relative">
-                                <h1 className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight reveal-text">
+                                <h1 className="text-7xl md:text-8xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight reveal-text">
                                     Meet<br />&nbsp;&nbsp;&nbsp;/<span className="text-[rgb(27,55,121)]/50 italic">Our Team</span>
                                 </h1>
                             </div>
@@ -231,7 +231,7 @@ export default function Contact() {
                                 <div className="mb-8 overflow-hidden w-full">
                                     <ScrollVelocity
                                         texts={['Collaboration is the heart of innovation.']}
-                                        velocity={50}
+                                        velocity={40}
                                         className="text-3xl md:text-5xl font-serif leading-tight text-[rgb(27,55,121)]"
                                     />
                                 </div>
@@ -246,6 +246,7 @@ export default function Contact() {
                 {/* 1. SUPERVISOR SECTION */}
                 <section className="pb-16">
                     <div className="container mx-auto px-4">
+                        <div className="h-px bg-[rgb(27,55,121)]/20 w-full mb-16" />
                         <div className="flex flex-col lg:flex-row gap-5 lg:gap-10">
                             {/* Left Column: Header */}
                             <div className="lg:w-1/4 flex-shrink-0">
