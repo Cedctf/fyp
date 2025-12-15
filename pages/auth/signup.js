@@ -126,7 +126,7 @@ export default function SignUp() {
 
         <div className="max-w-md mx-auto space-y-8">
           {error && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
+            <div className="rounded-lg bg-[rgb(87,17,17)]/5 border border-[rgb(87,17,17)]/20 p-4 text-sm text-[rgb(87,17,17)]">
               {error}
             </div>
           )}

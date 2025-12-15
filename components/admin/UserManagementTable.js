@@ -122,7 +122,7 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
     return (
         <div>
             {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-200 text-sm">
+                <div className="bg-[rgb(87,17,17)]/5 text-[rgb(87,17,17)] p-4 rounded-lg mb-6 border border-[rgb(87,17,17)]/20 text-sm">
                     {error}
                 </div>
             )}
@@ -165,19 +165,19 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-[rgb(27,55,121)]/70">
-                                            {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'Never'}
+                                            {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Never'}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-[rgb(27,55,121)]/70">
-                                            {new Date(user.createdAt).toLocaleDateString()}
+                                            {new Date(user.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                                         </div>
                                     </td>
                                     <td className="pl-6 pr-4 py-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                                         {user.role === 'admin' ? (
                                             <button
                                                 onClick={() => handleRoleUpdate(user, 'user')}
-                                                className="text-red-600 hover:text-red-800 text-xs font-medium transition-colors"
+                                                className="text-[rgb(87,17,17)] hover:text-[rgb(87,17,17)]/80 text-xs font-medium transition-colors"
                                                 disabled={user._id === session?.user?.id}
                                             >
                                                 Demote
@@ -343,7 +343,7 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
                                 <div>
                                     <p className="text-sm font-medium text-gray-700">Joined</p>
                                     <p className="text-sm text-gray-600">
-                                        {new Date(selectedUser.createdAt).toLocaleDateString()} at {new Date(selectedUser.createdAt).toLocaleTimeString()}
+                                        {new Date(selectedUser.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}, {new Date(selectedUser.createdAt).toLocaleTimeString()}
                                     </p>
                                 </div>
                             </div>

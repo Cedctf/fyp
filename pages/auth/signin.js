@@ -78,7 +78,7 @@ export default function SignIn() {
 
         <div className="max-w-md mx-auto space-y-8">
           {error && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
+            <div className="rounded-lg bg-[rgb(87,17,17)]/5 border border-[rgb(87,17,17)]/20 p-4 text-sm text-[rgb(87,17,17)]">
               {error}
             </div>
           )}
@@ -110,7 +110,7 @@ export default function SignIn() {
               </svg>
               Sign in with Google
             </button>
-            
+
             <button
               onClick={() => handleOAuthSignIn("github")}
               disabled={isLoading}
@@ -152,7 +152,7 @@ export default function SignIn() {
                 />
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-semibold uppercase tracking-widest text-[rgb(27,55,121)]/70 mb-2">
                 Password

@@ -106,11 +106,11 @@ export const ARTICLES = [
                     Ideally, you should seek medical advice if you experience a high fever (40°C/104°F) accompanied by two of the following symptoms: severe headache, pain behind the eyes, muscle and joint pain, nausea, vomiting, or swollen glands.
                 </p>
                 <h3 className="text-2xl font-serif font-bold text-[rgb(87,17,17)] mt-8 mb-4">Warning Signs of Severe Dengue</h3>
-                <div className="bg-red-50 p-6 rounded-lg border-l-4 border-red-500 mb-8">
-                    <p className="mb-4 text-red-900 font-semibold">
+                <div className="bg-[rgb(87,17,17)]/5 p-6 rounded-lg border-l-4 border-[rgb(87,17,17)] mb-8">
+                    <p className="mb-4 text-[rgb(87,17,17)] font-semibold">
                         Severe dengue usually occurs 3–7 days after illness onset, often around the time the fever drops (defervescence). Watch closely for these signs:
                     </p>
-                    <ul className="list-disc list-inside text-red-800 space-y-2">
+                    <ul className="list-disc list-inside text-[rgb(87,17,17)] space-y-2">
                         <li>Severe abdominal pain</li>
                         <li>Persistent vomiting</li>
                         <li>Rapid breathing</li>
@@ -118,7 +118,7 @@ export const ARTICLES = [
                         <li>Fatigue or restlessness</li>
                         <li>Blood in vomit or stool</li>
                     </ul>
-                    <p className="mt-4 text-sm text-red-700 italic">
+                    <p className="mt-4 text-sm text-[rgb(87,17,17)] italic">
                         *If you or a family member exhibits any of these warning signs, go to an emergency room immediately.*
                     </p>
                 </div>

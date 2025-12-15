@@ -167,7 +167,7 @@ export default function ProtectedPage() {
             </button>
 
             {error && (
-              <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-4 text-red-600">
+              <div className="mt-4 rounded-lg bg-[rgb(87,17,17)]/5 border border-[rgb(87,17,17)]/20 p-4 text-[rgb(87,17,17)]">
                 {error}
               </div>
             )}

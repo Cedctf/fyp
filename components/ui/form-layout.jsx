@@ -141,7 +141,7 @@ export default function WorkspaceForm() {
               </div>
             </div>
             <h4 className="mt-14 font-medium">
-              Plan type<span className="text-red-500">*</span>
+              Plan type<span className="text-[rgb(87,17,17)]">*</span>
             </h4>
             <RadioGroup
               value={selected.name}

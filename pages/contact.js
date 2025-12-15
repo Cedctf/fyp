@@ -221,7 +221,7 @@ export default function Contact() {
                             {/* Top: Big Title */}
                             <div className="relative">
                                 <h1 className="text-6xl md:text-8xl font-serif leading-none reveal-text text-[rgb(27,55,121)]">
-                                    Meet<br /><span className="text-[rgb(27,55,121)]/50 italic">Our Team</span>/
+                                    Meet<br />&nbsp;&nbsp;&nbsp;/<span className="text-[rgb(27,55,121)]/50 italic">Our Team</span>
                                 </h1>
                             </div>
 
