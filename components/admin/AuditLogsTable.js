@@ -1,18 +1,16 @@
 import { useState, useEffect } from "react";
-import { Shield, Search, Filter } from "lucide-react";
 
-export default function AuditLogsTable() {
+export default function AuditLogsTable({ searchTerm, filterType }) {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filterType, setFilterType] = useState("ALL");
 
     useEffect(() => {
         fetchLogs();
     }, []);
 
     const fetchLogs = async () => {
+        setLoading(true);
         try {
             const res = await fetch('/api/admin/logs');
             const data = await res.json();
@@ -56,93 +54,60 @@ export default function AuditLogsTable() {
 
     return (
         <div>
-            <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-serif font-semibold flex items-center gap-3">
-                        <Shield className="w-6 h-6" />
-                        Audit Logs
-                    </h2>
-                    <p className="text-[rgb(27,55,121)]/70 mt-1 text-sm">
-                        Immutable record of system activities.
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search logs..."
-                            className="pl-9 pr-4 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[rgb(27,55,121)] w-64"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="relative">
-                        <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <select
-                            className="pl-9 pr-8 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[rgb(27,55,121)] appearance-none bg-white"
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)}
-                        >
-                            <option value="ALL">All Events</option>
-                            <option value="AUTH">Authentication</option>
-                            <option value="API">API Keys</option>
-                            <option value="USER_MGMT">User Mgmt</option>
-                        </select>
-                    </div>
-                    <div className="text-xs bg-gray-100 px-3 py-2 rounded-md font-mono whitespace-nowrap">
-                        {filteredLogs.length} Events
-                    </div>
-                </div>
-            </header>
-
             {error && (
                 <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-200 text-sm">
                     {error}
                 </div>
             )}
 
-            <div className="bg-white border border-[rgb(27,55,121)]/10 rounded-lg shadow-sm overflow-hidden">
-                <div className="overflow-x-auto h-[600px] overflow-y-auto relative">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-[rgb(27,55,121)]/60 uppercase bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
+            <div className="w-full overflow-hidden">
+                <div className="overflow-x-auto h-[600px] overflow-y-auto">
+                    <table className="w-full">
+                        <thead>
                             <tr>
-                                <th className="px-6 py-3 font-semibold">Timestamp</th>
-                                <th className="px-6 py-3 font-semibold">Action</th>
-                                <th className="px-6 py-3 font-semibold">User ID</th>
-                                <th className="px-6 py-3 font-semibold">Resource</th>
-                                <th className="px-6 py-3 font-semibold">Details</th>
+                                <th className="pl-0 pr-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Timestamp</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Action</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">User ID</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Resource</th>
+                                <th className="pl-6 pr-0 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Details</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody>
                             {filteredLogs.map((log) => (
                                 <tr key={log._id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="px-6 py-4 font-mono text-xs whitespace-nowrap">
-                                        {new Date(log.timestamp).toLocaleString()}
+                                    <td className="pl-0 pr-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-[rgb(27,55,121)]">
+                                            {new Date(log.timestamp).toLocaleString()}
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            ${log.action.includes('REVOKE') || log.action.includes('DELETE') ? 'bg-red-100 text-red-800' :
-                                                log.action.includes('CREATE') || log.action.includes('SIGNUP') ? 'bg-green-100 text-green-800' :
-                                                    'bg-blue-100 text-blue-800'}`}>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`text-xs font-semibold
+                                            ${log.action.includes('REVOKE') || log.action.includes('DELETE') ? 'text-red-600' :
+                                                log.action.includes('CREATE') || log.action.includes('SIGNUP') ? 'text-green-600' :
+                                                    'text-blue-600'}`}>
                                             {log.action}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 font-mono text-xs text-gray-500">
-                                        {log.userId}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-xs font-mono text-[rgb(27,55,121)]/70">
+                                            {log.userId}
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-600">
-                                        {log.resource}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-[rgb(27,55,121)]/70">
+                                            {log.resource}
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-500 font-mono text-xs max-w-xs truncate">
-                                        {JSON.stringify(log.details)}
+                                    <td className="pl-6 pr-0 py-4 whitespace-nowrap">
+                                        <div className="text-xs font-mono text-[rgb(27,55,121)]/50 max-w-xs truncate">
+                                            {JSON.stringify(log.details)}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                             {filteredLogs.length === 0 && (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan="5" className="px-6 py-12 text-center text-[rgb(27,55,121)]/50">
                                         No matching logs found.
                                     </td>
                                 </tr>

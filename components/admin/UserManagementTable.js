@@ -1,26 +1,26 @@
 import { useState, useEffect } from "react";
-import { Users, Shield, UserPlus, Search, Filter, X, MapPin, Phone, Calendar, Mail } from "lucide-react";
+import { Users, Shield, UserPlus, X, MapPin, Phone, Calendar, Mail } from "lucide-react";
 import { useSession } from "next-auth/react";
 
-export default function UserManagementTable() {
+export default function UserManagementTable({ searchTerm, filterRole, showCreateModal, setShowCreateModal }) {
     const { data: session } = useSession();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filterRole, setFilterRole] = useState("ALL");
 
-    // Create User Modal State
-    const [showCreateModal, setShowCreateModal] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null); // For details modal
+    // Create User Modal - State for form data only
     const [newAdminData, setNewAdminData] = useState({ name: '', email: '', password: '' });
     const [createLoading, setCreateLoading] = useState(false);
+
+    // User Details Modal
+    const [selectedUser, setSelectedUser] = useState(null);
 
     useEffect(() => {
         fetchUsers();
     }, []);
 
     const fetchUsers = async () => {
+        setLoading(true);
         try {
             const res = await fetch('/api/admin/users');
             const data = await res.json();
@@ -103,105 +103,63 @@ export default function UserManagementTable() {
 
     return (
         <div>
-            <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-serif font-semibold flex items-center gap-3">
-                        <Users className="w-6 h-6" />
-                        User Management
-                    </h2>
-                    <p className="text-[rgb(27,55,121)]/70 mt-1 text-sm">
-                        Manage user roles and access.
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search users..."
-                            className="pl-9 pr-4 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[rgb(27,55,121)] w-64"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="relative">
-                        <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <select
-                            className="pl-9 pr-8 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[rgb(27,55,121)] appearance-none bg-white"
-                            value={filterRole}
-                            onChange={(e) => setFilterRole(e.target.value)}
-                        >
-                            <option value="ALL">All Roles</option>
-                            <option value="user">Users</option>
-                            <option value="admin">Admins</option>
-                        </select>
-                    </div>
-                    <button
-                        onClick={() => setShowCreateModal(true)}
-                        className="bg-[rgb(27,55,121)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 transition-colors flex items-center gap-2 text-sm whitespace-nowrap"
-                    >
-                        <UserPlus className="w-4 h-4" />
-                        Create Admin
-                    </button>
-                </div>
-            </header>
-
             {error && (
                 <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-200 text-sm">
                     {error}
                 </div>
             )}
 
-            <div className="bg-white border border-[rgb(27,55,121)]/10 rounded-lg shadow-sm overflow-hidden">
-                <div className="overflow-x-auto h-[600px] overflow-y-auto relative">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-[rgb(27,55,121)]/60 uppercase bg-gray-50 border-b border-gray-100 sticky top-0 z-10 bg-white shadow-sm">
+            <div className="w-full overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead>
                             <tr>
-                                <th className="px-6 py-3 font-semibold">User</th>
-                                <th className="px-6 py-3 font-semibold">Role</th>
-                                <th className="px-6 py-3 font-semibold">Joined</th>
-                                <th className="px-6 py-3 font-semibold text-right">Actions</th>
+                                <th className="pl-0 pr-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">User</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Role</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Joined</th>
+                                <th className="pl-6 pr-0 py-3 text-right text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody>
                             {filteredUsers.map((user) => (
                                 <tr
                                     key={user._id}
                                     className="hover:bg-gray-50/50 transition-colors cursor-pointer"
                                     onClick={() => setSelectedUser(user)}
                                 >
-                                    <td className="px-6 py-4">
-                                        <div className="font-medium text-[rgb(27,55,121)]">
-                                            {user.name} <span className="text-xs text-gray-400 font-normal ml-1">({user._id})</span>
+                                    <td className="pl-0 pr-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-[rgb(27,55,121)]">
+                                            {user.name}
                                         </div>
-                                        <div className="text-xs text-gray-500">{user.email}</div>
+                                        <div className="text-xs text-[rgb(27,55,121)]/70">{user.email}</div>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
-                                            {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
-                                            {user.role || 'user'}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`text-xs font-semibold flex items-center gap-1
+                                            ${user.role === 'admin' ? 'text-purple-600' : 'text-gray-600'}`}>
+                                            {user.role === 'admin' && <Shield className="w-3 h-3" />}
+                                            {user.role === 'admin' ? 'Admin' : 'User'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-500 text-xs">
-                                        {new Date(user.createdAt).toLocaleDateString()}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-[rgb(27,55,121)]/70">
+                                            {new Date(user.createdAt).toLocaleDateString()}
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                                    <td className="pl-6 pr-0 py-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                                         {user.role === 'admin' ? (
                                             <button
                                                 onClick={() => handleRoleUpdate(user._id, 'user')}
-                                                className="text-red-600 hover:text-red-800 text-xs font-medium"
-                                                disabled={user._id === session?.user?.id} // Cannot demote self
+                                                className="text-red-600 hover:text-red-800 text-xs font-medium transition-colors"
+                                                disabled={user._id === session?.user?.id}
                                             >
-                                                Demote to User
+                                                Demote
                                             </button>
                                         ) : (
                                             <button
                                                 onClick={() => handleRoleUpdate(user._id, 'admin')}
-                                                className="text-[rgb(27,55,121)] hover:text-[rgb(27,55,121)]/80 text-xs font-medium"
+                                                className="text-[rgb(27,55,121)] hover:text-[rgb(27,55,121)]/80 text-xs font-medium transition-colors"
                                             >
-                                                Promote to Admin
+                                                Promote
                                             </button>
                                         )}
                                     </td>
