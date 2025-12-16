@@ -26,7 +26,7 @@ export function AnimatedFeatureCard({
       role="button"
       tabIndex={0}
       onClick={onClick}
-      className="w-full max-w-md min-h-[520px] space-y-6 cursor-pointer rounded-3xl bg-gradient-to-b from-green-50/50 to-emerald-50/30 backdrop-blur-sm border border-emerald-100/20 p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+      className="w-full max-w-md h-[600px] space-y-6 cursor-pointer rounded-3xl bg-gradient-to-b from-green-50/50 to-emerald-50/30 backdrop-blur-sm border border-[rgb(27,55,121)] p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 flex flex-col items-center justify-center"
     >
       <div className="mx-auto mb-6 flex h-40 w-40 items-center justify-center overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-100">
         <img

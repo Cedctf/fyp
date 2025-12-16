@@ -5,6 +5,7 @@ import { useSession, signIn } from "next-auth/react";
 import { AnimatedFeatureCard } from "../../components/ui/animated-feature-card";
 import { MultiStepSignUp } from "@/components/ui/multi-step-signup";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
 
 export default function UserType() {
   const router = useRouter();
@@ -72,14 +73,10 @@ export default function UserType() {
     address,
     phone,
     password,
-    confirmPassword,
   }) => {
     setSignupError("");
 
-    if (password !== confirmPassword) {
-      setSignupError("Passwords do not match");
-      return;
-    }
+
 
     if (password.length < 8) {
       setSignupError("Password must be at least 8 characters long");
@@ -210,10 +207,21 @@ export default function UserType() {
               {expandedType === "new" && (
                 <motion.div
                   layoutId="card-new"
-                  className="absolute top-0 w-full max-w-5xl rounded-3xl bg-gradient-to-b from-green-50/50 to-emerald-50/30 backdrop-blur-sm border border-emerald-100/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden z-20"
+                  className="absolute top-0 w-full max-w-5xl rounded-3xl bg-gradient-to-b from-green-50/50 to-emerald-50/30 backdrop-blur-sm border border-[rgb(27,55,121)] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden z-20"
                   transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
                 >
-                  <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-emerald-100/20 min-h-[520px]">
+                  <div className="flex flex-col md:flex-row divide-y md:divide-y-0 h-[600px] relative">
+                    <button
+                      onClick={() => {
+                        setExpandedType(null);
+                        setShowSignupEmailForm(false);
+                        setSignupError("");
+                      }}
+                      className="absolute top-8 left-8 z-30 inline-flex items-center text-[rgb(27,55,121)]/60 hover:text-[rgb(27,55,121)] transition-colors font-semibold tracking-wide text-sm group"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                      CHANGE USER TYPE
+                    </button>
                     {/* Left info panel */}
                     <div className="hidden md:flex w-full md:w-1/2 p-8 items-center justify-center">
                       <div className="w-full max-w-md space-y-6 text-center">
@@ -233,17 +241,14 @@ export default function UserType() {
                         <p className="mt-4 text-xs font-mono uppercase tracking-[0.2em] text-slate-400">
                           @onboarding
                         </p>
-                        <button
-                          onClick={handleBack}
-                          className="mt-6 text-sm text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          {showSignupEmailForm ? "← Back to options" : "← Back to selection"}
-                        </button>
+
                       </div>
                     </div>
 
+                    {/* Separator */}
+                    <div className="hidden md:block w-px bg-[rgb(27,55,121)]/20 my-10 self-stretch rounded-full" />
                     {/* Right form panel */}
-                    <div className="w-full md:w-1/2 p-8 bg-white/60 backdrop-blur-md overflow-hidden relative">
+                    <div className="w-full md:w-1/2 p-8 bg-white/60 backdrop-blur-md overflow-hidden relative flex flex-col justify-center">
                       <div className="md:hidden mb-6">
                         <button
                           onClick={handleBack}
@@ -347,6 +352,7 @@ export default function UserType() {
                             <MultiStepSignUp
                               onSubmit={handleMultiStepSubmit}
                               isSubmitting={isLoading}
+                              onBack={() => setShowSignupEmailForm(false)}
                             />
                           </motion.div>
                         )}
@@ -362,10 +368,17 @@ export default function UserType() {
               {expandedType === "existing" && (
                 <motion.div
                   layoutId="card-existing"
-                  className="absolute top-0 w-full max-w-5xl rounded-3xl bg-gradient-to-b from-green-50/50 to-emerald-50/30 backdrop-blur-sm border border-emerald-100/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden z-20"
+                  className="absolute top-0 w-full max-w-5xl rounded-3xl bg-gradient-to-b from-green-50/50 to-emerald-50/30 backdrop-blur-sm border border-[rgb(27,55,121)] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden z-20"
                   transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
                 >
-                  <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-emerald-100/20 min-h-[520px]">
+                  <div className="flex flex-col md:flex-row divide-y md:divide-y-0 h-[600px] relative">
+                    <button
+                      onClick={handleBack}
+                      className="absolute top-8 left-8 z-30 inline-flex items-center text-[rgb(27,55,121)]/60 hover:text-[rgb(27,55,121)] transition-colors font-semibold tracking-wide text-sm group"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                      CHANGE USER TYPE
+                    </button>
                     {/* Left info panel - Visual match to card */}
                     <div className="w-full md:w-1/2 p-8 flex items-center justify-center">
                       <div className="w-full max-w-md space-y-6 text-center">
@@ -382,18 +395,15 @@ export default function UserType() {
                         <p className="mt-3 text-sm text-slate-600">
                           Jump back into your dashboard and continue right where you left off.
                         </p>
-                        <button
-                          onClick={handleBack}
-                          className="mt-6 text-sm text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          Change User Type
-                        </button>
+
                         <p className="mt-4 text-xs font-mono uppercase tracking-[0.2em] text-slate-400">
                           @welcome-back
                         </p>
                       </div>
                     </div>
 
+                    {/* Separator */}
+                    <div className="hidden md:block w-px bg-[rgb(27,55,121)]/20 my-10 self-stretch rounded-full" />
                     {/* Right sign-in form - Animated In */}
                     <motion.div
                       initial={{ opacity: 0, x: 20 }}
@@ -532,8 +542,8 @@ export default function UserType() {
             </AnimatePresence>
           </div>
         </LayoutGroup>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
 
