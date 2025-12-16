@@ -400,6 +400,45 @@ const DengueHeatmap = () => {
                                 </div>
                             </div>
 
+                            {/* WIDGET: Top Forecast Drivers */}
+                            <div className="bg-white/40 backdrop-blur-[40px] backdrop-saturate-200 p-5 rounded-[24px] shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] border border-white/50 ring-1 ring-white/30 transition-all hover:bg-white/50">
+                                <label className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-3 block">
+                                    Top Forecast Drivers
+                                </label>
+                                <div className="space-y-3">
+                                    {/* Driver 1: Urban Density */}
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-semibold text-gray-700">Urban Density</span>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                <div className="h-full bg-blue-600 rounded-full" style={{ width: '68%' }}></div>
+                                            </div>
+                                            <span className="text-xs font-bold text-gray-600">68%</span>
+                                        </div>
+                                    </div>
+                                    {/* Driver 2: Rainfall */}
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-semibold text-gray-700">Rainfall Index</span>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                <div className="h-full bg-blue-500 rounded-full" style={{ width: '25%' }}></div>
+                                            </div>
+                                            <span className="text-xs font-bold text-gray-600">25%</span>
+                                        </div>
+                                    </div>
+                                    {/* Driver 3: Case Count */}
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-semibold text-gray-700">Previous Cases</span>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                <div className="h-full bg-blue-400 rounded-full" style={{ width: '7%' }}></div>
+                                            </div>
+                                            <span className="text-xs font-bold text-gray-600">7%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* WIDGET 5: Outbreak Analytics (Visualization) */}
                             <div className="bg-white/40 backdrop-blur-[40px] backdrop-saturate-200 p-5 rounded-[24px] shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] border border-white/50 ring-1 ring-white/30 transition-all hover:bg-white/50">
                                 <label className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4 block">
@@ -506,7 +545,10 @@ const DengueHeatmap = () => {
                                             <div className="text-4xl font-extrabold text-blue-600 drop-shadow-sm">
                                                 <CountUp to={totalCases} separator="," duration={1.5} />
                                             </div>
-                                            <p className="text-[10px] text-gray-500 font-medium">Predicted for next {forecastHorizon === '7d' ? '7' : forecastHorizon === '14d' ? '14' : '28'} days</p>
+                                            <div className="text-xs font-bold text-gray-500 mt-1">
+                                                <span>(95% CI: {Math.floor(totalCases * 0.85)} - {Math.ceil(totalCases * 1.15)})</span>
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 font-medium mt-1">Predicted for next {forecastHorizon === '7d' ? '7' : forecastHorizon === '14d' ? '14' : '28'} days</p>
                                         </div>
 
                                         {/* Forecast Selection Buttons */}

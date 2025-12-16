@@ -32,5 +32,11 @@ def predict_manual():
     result = ai_brain.predict_manual(rain, density, cases)
     return jsonify(result)
 
+@app.route('/api/alerts/status', methods=['GET'])
+def get_alert_status():
+    """ Endpoint for Admin Dashboard to get current high-risk areas """
+    summary = ai_brain.get_risk_summary()
+    return jsonify(summary)
+
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
