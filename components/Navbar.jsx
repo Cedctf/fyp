@@ -29,8 +29,9 @@ const Navbar = ({ isDark }) => {
     const menuItems = [
         { title: "HOME", date: "01", description: "Return to the main landing page.", href: "/" },
         { title: "DENGUE DASHBOARD", date: "02", description: "Real-time statistics and heatmaps.", href: "/dengue-heatmap" },
-        { title: "API DASHBOARD", date: "03", description: "Developer tools and API access.", href: "/api-dashboard" },
+        { title: "API MANAGEMENT DASHBOARD", date: "03", description: "Developer tools and API access.", href: "/api-dashboard" },
         { title: "EDUCATION HUB", date: "04", description: "Learn about prevention and safety.", href: "/education" },
+        ...(session?.user?.role === 'admin' ? [{ title: "ADMIN DASHBOARD", date: "05", description: "Manage users and content.", href: "/admin" }] : []),
     ];
 
     const menuContainerVariants = {

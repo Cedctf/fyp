@@ -209,7 +209,7 @@ def plot_weekly_trend(df: pd.DataFrame, current_week: int, out_path: str, hist_d
         
         # Approximate date for the given week (using ISO calendar)
         # Week 1 usually starts near Jan 1-4. Simple approx:
-        week_start_date = pd.Timestamp(f"{max_year}-01-01") + pd.to_timedelta(current_week * 7, unit="D")
+        week_start_date = pd.Timestamp(f"{int(max_year)}-01-01") + pd.to_timedelta(current_week * 7, unit="D")
         
         # If hist_days is specified, filter range
         if hist_days > 0:

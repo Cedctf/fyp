@@ -115,7 +115,7 @@ export default function SignUp() {
 
       <main className="container mx-auto px-4 pt-24 pb-16">
         <header className="mb-12 mt-8">
-          <h1 className="text-4xl md:text-5xl font-serif tracking-tight border-none">
+          <h1 className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight border-none">
             Sign Up
           </h1>
           <p className="text-[rgb(27,55,121)]/70 mt-3">
@@ -126,7 +126,7 @@ export default function SignUp() {
 
         <div className="max-w-md mx-auto space-y-8">
           {error && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
+            <div className="rounded-lg bg-[rgb(87,17,17)]/5 border border-[rgb(87,17,17)]/20 p-4 text-sm text-[rgb(87,17,17)]">
               {error}
             </div>
           )}

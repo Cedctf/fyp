@@ -173,7 +173,7 @@ export default function LocationAndAlertsSettings() {
       )}
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
+        <div className="p-3 bg-[rgb(87,17,17)]/5 border border-[rgb(87,17,17)]/20 rounded-md text-sm text-[rgb(87,17,17)]">
           {error}
         </div>
       )}

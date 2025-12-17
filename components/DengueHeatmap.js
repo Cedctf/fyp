@@ -346,7 +346,7 @@ const DengueHeatmap = () => {
     if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
-                <div className="text-center p-8 bg-red-900/50 rounded-xl border border-red-500">
+                <div className="text-center p-8 bg-red-600/50 rounded-xl border border-red-600">
                     <h2 className="text-2xl font-bold mb-4">Missing API Key</h2>
                     <p>Please add <code className="bg-black px-2 py-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> to your .env.local file.</p>
                 </div>
@@ -474,7 +474,7 @@ const DengueHeatmap = () => {
                                                     <span className="font-semibold text-gray-700 group-hover:text-blue-700 transition-colors w-24 truncate" title={district.name}>{district.name}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`text-[10px] font-bold ${district.trend.startsWith('+') ? 'text-red-500' : 'text-green-600'}`}>
+                                                    <span className={`text-[10px] font-bold ${district.trend.startsWith('+') ? 'text-red-600' : 'text-green-600'}`}>
                                                         {district.trend}
                                                     </span>
                                                     <span className="font-bold text-gray-800 w-10 text-right">

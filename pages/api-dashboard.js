@@ -83,24 +83,22 @@ export default function ApiDashboard() {
     return (
         <div className="min-h-screen bg-white text-[rgb(27,55,121)] font-sans">
             <Head>
-                <title>API Dashboard</title>
+                <title>API Management Dashboard</title>
                 <meta name="description" content="Manage your API keys and test your integration" />
             </Head>
 
             <Navbar />
 
             <main className="container mx-auto px-4 pt-24 pb-16">
-                <header className="mb-12 mt-8">
-                    <h1 className="text-4xl md:text-5xl font-serif tracking-tight border-none">
-                        API Management
+                <section className="mb-20 mt-8 text-left">
+                    <h1 className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight border-none">
+                        API Management Dashboard
+                        <br />
+                        <span className="text-3xl font-normal font-[family-name:var(--font-inter)] block mt-2">Enabling Seamless Integration Through Secure and Reliable APIs</span>
                     </h1>
-                    <p className="text-[rgb(27,55,121)]/70 mt-3">
-                        Manage your API keys and test your integration with our public endpoints.
-                    </p>
-                    <div className="h-px bg-[rgb(27,55,121)]/15 mt-6" />
-                </header>
+                </section>
 
-                <section className="space-y-10">
+                <section className="space-y-10 pt-10 border-t border-[rgb(27,55,121)]/10">
                     {/* API Key Management */}
                     <ApiKeyManager />
 
@@ -166,7 +164,7 @@ export default function ApiDashboard() {
                         </form>
 
                         {demoError && (
-                            <div className="mx-6 mb-4 rounded-md bg-red-50 border border-red-200 p-4 text-red-600 flex items-center gap-2">
+                            <div className="mx-6 mb-4 rounded-md bg-[rgb(87,17,17)]/5 border border-[rgb(87,17,17)]/20 p-4 text-[rgb(87,17,17)] flex items-center gap-2">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 {demoError}
                             </div>

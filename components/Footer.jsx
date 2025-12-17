@@ -78,17 +78,21 @@ export default function Footer() {
                     {/* Top Navigation */}
                     <div className={`flex flex-col md:flex-row justify-between items-start md:items-center text-sm font-medium ${theme.textSecondary} gap-8 md:gap-0`}>
                         <div className="flex gap-8">
-                            {["About Us", "Dengue Hotspot Dashboard"].map((item) => (
-                                <Magnetic key={item}>
-                                    <a href="#" className={`transition-colors ${theme.hover}`}>{item}</a>
+                            {[
+                                { name: "About Us", link: "/about" },
+                                { name: "Education Hub", link: "/education" },
+                                { name: "Dengue Hotspot Dashboard", link: "/dengue-heatmap" }
+                            ].map((item) => (
+                                <Magnetic key={item.name}>
+                                    <a href={item.link} className={`transition-colors ${theme.hover}`}>{item.name}</a>
                                 </Magnetic>
                             ))}
                         </div>
                         <div className="flex flex-col md:items-end gap-2 text-right">
                             <span className={`${theme.text} font-semibold`}>Our Services</span>
                             <div className={`flex gap-6 text-xs ${theme.textSecondary}`}>
-                                <a href="#" className={`transition-colors ${theme.hover}`}>Early Warning System</a>
-                                <a href="#" className={`transition-colors ${theme.hover}`}>API Key</a>
+                                <a href="/dengue-heatmap" className={`transition-colors ${theme.hover}`}>Early Warning System</a>
+                                <a href="/api-dashboard" className={`transition-colors ${theme.hover}`}>API Key</a>
                                 <a href="/contact" className={`transition-colors ${theme.hover}`}>Contact Us</a>
                             </div>
                         </div>
