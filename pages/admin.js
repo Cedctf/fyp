@@ -160,6 +160,23 @@ export default function AdminDashboard() {
                                 />
                             )}
                         </button>
+                        <button
+                            onClick={() => setActiveTab('alerts')}
+                            className={`relative flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'alerts'
+                                ? 'text-[rgb(27,55,121)]'
+                                : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Alert System
+                            {activeTab === 'alerts' && (
+                                <motion.div
+                                    layoutId="activeTabIndicator"
+                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[rgb(27,55,121)]"
+                                    initial={false}
+                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                />
+                            )}
+                        </button>
                     </div>
 
                     {/* Controls */}
