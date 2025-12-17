@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
+from datetime import date, datetime
 
 class DenguePredictor:
     def __init__(self):
@@ -108,10 +109,24 @@ class DenguePredictor:
         
         # Load previous day's state
         risk_state = self._load_risk_state()
-        new_risk_state = {}
+        new_risk_state = {'last_updated': risk_state.get('last_updated')}
         
         high_risk_areas = []
+
+        # Date Logic
+        today_str = date.today().isoformat() # YYYY-MM-DD
+        start_date = date(2025, 12, 16)
         
+        # Max streak depends on when we started counting (16/12/2025)
+        # If today is 17th, delta is 1. Streak can be at most 2 (16th and 17th).
+        days_since_start = (date.today() - start_date).days
+        max_possible_streak = max(1, days_since_start + 1)
+
+        already_updated_today = (risk_state.get('last_updated') == today_str)
+
+        if not already_updated_today:
+             new_risk_state['last_updated'] = today_str
+
         # Iterate through all known locations in the DB
         for index, row in self.location_db.iterrows():
             rain = row['Rainfall_Index']
@@ -127,8 +142,20 @@ class DenguePredictor:
                 # Check history
                 prev_streak = risk_state.get(loc_id, {}).get('consecutive_days', 0)
                 
-                # REAL LOGIC: Increment streak naturally
-                current_streak = prev_streak + 1
+                if already_updated_today:
+                    # Don't increment if valid update already happened today
+                    current_streak = prev_streak
+                    # Edge case: If it wasn't high risk earlier today but is now? 
+                    # Simplicity: Stick to previous streak if available.
+                    if current_streak == 0: current_streak = 1
+                else:
+                    # New day, increment streak
+                    current_streak = prev_streak + 1
+                
+                # CAP STREAK based on user request (Start at 16/12/2025)
+                # This fixes the "264 days" issue immediately
+                if current_streak > max_possible_streak:
+                    current_streak = max_possible_streak
                 
                 new_risk_state[loc_id] = {'consecutive_days': current_streak}
 
