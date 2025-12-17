@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
-import { createApiKey, listApiKeys, revokeApiKey } from "@/lib/api-keys";
+import { createApiKey, listApiKeys, revokeApiKey, updateApiKeyStatus } from "@/lib/api-keys";
 
 export default async function handler(req, res) {
     const session = await getServerSession(req, res, authOptions);
@@ -43,8 +43,23 @@ export default async function handler(req, res) {
             console.error("Error revoking key:", error);
             return res.status(500).json({ error: "Internal Server Error" });
         }
+    } else if (req.method === 'PUT') {
+        try {
+            const { keyId, status } = req.body;
+            if (!keyId || !status) {
+                return res.status(400).json({ error: "Key ID and status are required" });
+            }
+            if (!['active', 'inactive'].includes(status)) {
+                return res.status(400).json({ error: "Invalid status" });
+            }
+            await updateApiKeyStatus(keyId, userId, status);
+            return res.status(200).json({ success: true });
+        } catch (error) {
+            console.error("Error updating key status:", error);
+            return res.status(500).json({ error: "Internal Server Error" });
+        }
     } else {
-        res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
+        res.setHeader('Allow', ['GET', 'POST', 'DELETE', 'PUT']);
         res.status(405).end(`Method ${req.method} Not Allowed`);
     }
 }

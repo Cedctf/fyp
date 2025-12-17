@@ -3,9 +3,15 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Send } from "lucide-react";
+import { Send, ChevronDown, Check } from "lucide-react";
 import ApiKeyManager from "@/components/ApiKeyManager";
 import Navbar from "../components/Navbar";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function ApiDashboard() {
     const { data: session, status } = useSession();
@@ -140,22 +146,36 @@ export default function ApiDashboard() {
                         </div>
 
                         <form onSubmit={runApiDemo} className="space-y-4 mt-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
+                            <div className="flex flex-col md:flex-row gap-4 items-end">
+                                <div className="w-full md:w-[200px]">
                                     <label className="block text-sm font-semibold uppercase tracking-widest text-[rgb(27,55,121)]/70 mb-2">
                                         Endpoint
                                     </label>
-                                    <select
-                                        value={selectedEndpoint}
-                                        onChange={(e) => setSelectedEndpoint(e.target.value)}
-                                        className="w-full px-3 py-2 border border-[rgb(27,55,121)]/20 rounded-md focus:ring-2 focus:ring-[rgb(27,55,121)] focus:border-[rgb(27,55,121)] font-mono text-sm bg-white text-[rgb(27,55,121)]"
-                                    >
-                                        <option value="/api/v1/data">/api/v1/data</option>
-                                        <option value="/api/v1/areas">/api/v1/areas</option>
-                                        <option value="/api/v1/availability">/api/v1/availability</option>
-                                    </select>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button
+                                                className="w-full px-3 py-2 border border-[rgb(27,55,121)]/20 rounded-md focus:ring-2 focus:ring-[rgb(27,55,121)] focus:border-[rgb(27,55,121)] font-mono text-sm bg-white text-[rgb(27,55,121)] flex items-center justify-between"
+                                                aria-label="Select endpoint"
+                                            >
+                                                <span>{selectedEndpoint}</span>
+                                                <ChevronDown className="h-4 w-4 opacity-50" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[200px] text-[rgb(27,55,121)] bg-white border border-[rgb(27,55,121)]/20">
+                                            {['/api/v1/data', '/api/v1/areas', '/api/v1/availability'].map(endpoint => (
+                                                <DropdownMenuItem
+                                                    key={endpoint}
+                                                    onSelect={() => setSelectedEndpoint(endpoint)}
+                                                    className="flex items-center gap-2 text-[rgb(27,55,121)] data-[highlighted]:bg-[rgb(27,55,121)]/10 data-[highlighted]:text-[rgb(27,55,121)] font-mono text-sm cursor-pointer px-3 py-2 outline-none"
+                                                >
+                                                    <span className="flex-1">{endpoint}</span>
+                                                    {selectedEndpoint === endpoint && <Check className="h-4 w-4" />}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
-                                <div>
+                                <div className="flex-1 w-full">
                                     <label className="block text-sm font-semibold uppercase tracking-widest text-[rgb(27,55,121)]/70 mb-2">
                                         Your API Key
                                     </label>
@@ -167,17 +187,16 @@ export default function ApiDashboard() {
                                         className="w-full px-3 py-2 border border-[rgb(27,55,121)]/20 rounded-md focus:ring-2 focus:ring-[rgb(27,55,121)] focus:border-[rgb(27,55,121)] font-mono text-sm bg-white text-[rgb(27,55,121)]"
                                     />
                                 </div>
-                            </div>
-
-                            <div className="flex justify-end">
-                                <button
-                                    type="submit"
-                                    disabled={demoLoading}
-                                    className="bg-[rgb(27,55,121)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 disabled:opacity-50 transition-colors text-sm flex items-center justify-center gap-3 whitespace-nowrap min-w-[150px]"
-                                >
-                                    <Send className="w-4 h-4" />
-                                    {demoLoading ? "Sending..." : "Send Request"}
-                                </button>
+                                <div className="w-full md:w-auto">
+                                    <button
+                                        type="submit"
+                                        disabled={demoLoading}
+                                        className="w-full md:w-auto bg-[rgb(27,55,121)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 disabled:opacity-50 transition-colors text-sm flex items-center justify-center gap-2 whitespace-nowrap min-w-[200px]"
+                                    >
+                                        <Send className="w-4 h-4" />
+                                        {demoLoading ? "Sending..." : "Send Request"}
+                                    </button>
+                                </div>
                             </div>
                         </form>
 
@@ -189,7 +208,7 @@ export default function ApiDashboard() {
                         )}
 
                         {demoData && (
-                            <div className="mx-6 mb-4 rounded-md bg-[rgb(27,55,121)] p-4 overflow-hidden shadow-inner">
+                            <div className="mb-4 rounded-md bg-[rgb(27,55,121)] p-4 overflow-hidden shadow-inner">
                                 <div className="flex justify-between items-center mb-2 border-b border-[rgb(27,55,121)]/30 pb-2">
                                     <span className="text-green-400 font-mono text-sm font-bold">Status: 200 OK</span>
                                     <span className="text-[rgb(27,55,121)]/50 text-xs font-mono">application/json</span>
@@ -279,21 +298,22 @@ export default function ApiDashboard() {
                                 </h3>
                                 <pre className="bg-gray-50 p-3 rounded border border-gray-200 font-mono text-xs text-[rgb(27,55,121)] overflow-x-auto">
                                     {`{
-  "message": "Success",
-  "meta": {
-    "count": 100,
-    "timestamp": "2025-12-14T...",
-    "request_id": "abc123xyz"
-  },
-  "data": [...]
-}`}
+                                        "message": "Success",
+                                        "meta": {
+                                            "count": 100,
+                                            "timestamp": "2025-12-14T...",
+                                            "request_id": "abc123xyz"
+                                        },
+                                        "data": [...]
+                                        }`}
                                 </pre>
                             </div>
                         </div>
 
                         {/* Endpoints */}
+                        <div className="h-px bg-[rgb(27,55,121)]/20"></div>
                         <div className="space-y-6">
-                            <h3 className="text-xl font-semibold border-b border-[rgb(27,55,121)]/10 pb-2">Endpoints</h3>
+                            <h2 className="text-3xl font-serif font-semibold text-[rgb(27,55,121)] mb-4">Endpoints</h2>
 
                             {/* GET /data */}
                             <div className="group">
@@ -304,39 +324,39 @@ export default function ApiDashboard() {
                                 <p className="text-sm text-[rgb(27,55,121)]/70 mb-4">
                                     Retrieve dengue case records with optional filtering.
                                 </p>
-                                <table className="w-full text-sm text-left">
-                                    <thead className="text-xs text-[rgb(27,55,121)]/50 uppercase bg-gray-50">
+                                <table className="w-full text-sm text-left overflow-x-auto no-scrollbar rounded-md">
+                                    <thead className="text-xs text-[rgb(27,55,121)] uppercase bg-gray-50 font-serif tracking-wider font-semibold">
                                         <tr>
                                             <th className="px-4 py-2">Parameter</th>
                                             <th className="px-4 py-2">Type</th>
                                             <th className="px-4 py-2">Description</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        <tr>
-                                            <td className="px-4 py-2 font-mono text-[rgb(27,55,121)]">area</td>
-                                            <td className="px-4 py-2 text-gray-500">string</td>
-                                            <td className="px-4 py-2">Filter by area name (e.g., "Kepong")</td>
+                                    <tbody className="divide-y divide-[rgb(27,55,121)]/20">
+                                        <tr className="hover:bg-[rgb(27,55,121)]/10 cursor-pointer transition-colors bg-[rgb(27,55,121)]/5">
+                                            <td className="px-4 py-4 font-mono text-[rgb(27,55,121)] font-medium">area</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">string</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">Filter by area name (e.g., "Kepong")</td>
                                         </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-mono text-[rgb(27,55,121)]">date</td>
-                                            <td className="px-4 py-2 text-gray-500">YYYY-MM-DD</td>
-                                            <td className="px-4 py-2">Get cases for a specific date</td>
+                                        <tr className="hover:bg-[rgb(27,55,121)]/10 cursor-pointer transition-colors">
+                                            <td className="px-4 py-4 font-mono text-[rgb(27,55,121)] font-medium">date</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">YYYY-MM-DD</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">Get cases for a specific date</td>
                                         </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-mono text-[rgb(27,55,121)]">start_date</td>
-                                            <td className="px-4 py-2 text-gray-500">YYYY-MM-DD</td>
-                                            <td className="px-4 py-2">Filter records from this date</td>
+                                        <tr className="hover:bg-[rgb(27,55,121)]/10 cursor-pointer transition-colors bg-[rgb(27,55,121)]/5">
+                                            <td className="px-4 py-4 font-mono text-[rgb(27,55,121)] font-medium">start_date</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">YYYY-MM-DD</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">Filter records from this date</td>
                                         </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-mono text-[rgb(27,55,121)]">end_date</td>
-                                            <td className="px-4 py-2 text-gray-500">YYYY-MM-DD</td>
-                                            <td className="px-4 py-2">Filter records up to this date</td>
+                                        <tr className="hover:bg-[rgb(27,55,121)]/10 cursor-pointer transition-colors">
+                                            <td className="px-4 py-4 font-mono text-[rgb(27,55,121)] font-medium">end_date</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">YYYY-MM-DD</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">Filter records up to this date</td>
                                         </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-mono text-[rgb(27,55,121)]">limit</td>
-                                            <td className="px-4 py-2 text-gray-500">number</td>
-                                            <td className="px-4 py-2">Max records (default: 5). Set to 0 for all.</td>
+                                        <tr className="hover:bg-[rgb(27,55,121)]/10 cursor-pointer transition-colors bg-[rgb(27,55,121)]/5">
+                                            <td className="px-4 py-4 font-mono text-[rgb(27,55,121)] font-medium">limit</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">number</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">Max records (default: 5). Set to 0 for all.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -357,6 +377,22 @@ export default function ApiDashboard() {
                                 <p className="text-sm text-[rgb(27,55,121)]/70">
                                     Get a list of all available districts/areas in the database.
                                 </p>
+                                <table className="w-full text-sm text-left overflow-x-auto no-scrollbar my-4 rounded-md">
+                                    <thead className="text-xs text-[rgb(27,55,121)] uppercase bg-gray-50 font-serif tracking-wider font-semibold">
+                                        <tr>
+                                            <th className="px-4 py-2">Parameter</th>
+                                            <th className="px-4 py-2">Type</th>
+                                            <th className="px-4 py-2">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-[rgb(27,55,121)]/20">
+                                        <tr className="hover:bg-[rgb(27,55,121)]/10 cursor-pointer transition-colors bg-[rgb(27,55,121)]/5">
+                                            <td className="px-4 py-4 font-mono text-[rgb(27,55,121)] font-medium">area</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">string</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">Filter by area name (e.g., "Kepong")</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                                 <div className="mb-4 bg-gray-50 p-3 rounded border border-gray-200 font-mono text-xs text-[rgb(27,55,121)] overflow-x-auto">
                                     <span className="text-gray-400 select-none block mb-1"># Example Request</span>
                                     <code className="block whitespace-pre">
@@ -374,6 +410,27 @@ export default function ApiDashboard() {
                                 <p className="text-sm text-[rgb(27,55,121)]/70">
                                     Get metadata about the dataset, including the full date range of available records.
                                 </p>
+                                <table className="w-full text-sm text-left overflow-x-auto no-scrollbar my-4 rounded-md">
+                                    <thead className="text-xs text-[rgb(27,55,121)] uppercase bg-gray-50 font-serif tracking-wider font-semibold">
+                                        <tr>
+                                            <th className="px-4 py-2">Parameter</th>
+                                            <th className="px-4 py-2">Type</th>
+                                            <th className="px-4 py-2">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-[rgb(27,55,121)]/20">
+                                        <tr className="hover:bg-[rgb(27,55,121)]/10 cursor-pointer transition-colors bg-[rgb(27,55,121)]/5">
+                                            <td className="px-4 py-4 font-mono text-[rgb(27,55,121)] font-medium">start_date</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">YYYY-MM-DD</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">Filter records from this date</td>
+                                        </tr>
+                                        <tr className="hover:bg-[rgb(27,55,121)]/10 cursor-pointer transition-colors">
+                                            <td className="px-4 py-4 font-mono text-[rgb(27,55,121)] font-medium">end_date</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">YYYY-MM-DD</td>
+                                            <td className="px-4 py-4 text-[rgb(27,55,121)]/70">Filter records up to this date</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                                 <div className="mb-4 bg-gray-50 p-3 rounded border border-gray-200 font-mono text-xs text-[rgb(27,55,121)] overflow-x-auto">
                                     <span className="text-gray-400 select-none block mb-1"># Example Request</span>
                                     <code className="block whitespace-pre">

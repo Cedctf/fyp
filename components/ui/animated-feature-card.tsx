@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 type AnimatedFeatureCardProps = {
   title: string;
@@ -7,6 +8,7 @@ type AnimatedFeatureCardProps = {
   featureNumber: string;
   handle: string;
   onClick?: () => void;
+  titleClassName?: string;
 };
 
 export function AnimatedFeatureCard({
@@ -16,6 +18,7 @@ export function AnimatedFeatureCard({
   featureNumber,
   handle,
   onClick,
+  titleClassName,
 }: AnimatedFeatureCardProps) {
   return (
     <motion.div
@@ -37,7 +40,7 @@ export function AnimatedFeatureCard({
         />
       </div>
 
-      <h3 className="text-2xl font-semibold text-slate-900">{title}</h3>
+      <h3 className={cn("text-2xl font-semibold text-brand-blue", titleClassName)}>{title}</h3>
       <p className="mt-3 text-sm text-slate-600">{description}</p>
       <p className="mt-4 text-xs font-mono uppercase tracking-[0.2em] text-slate-400">
         {handle}
