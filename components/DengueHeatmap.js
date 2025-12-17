@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { GoogleMap, LoadScript, HeatmapLayer, Rectangle } from '@react-google-maps/api';
 import Papa from 'papaparse';
 import { motion } from 'framer-motion';
+import { RefreshCw } from 'lucide-react';
 import CountUp from './ui/CountUp';
 
 const containerStyle = {
@@ -52,6 +53,35 @@ const DengueHeatmap = () => {
     // Manual Visual Calibration State
     const [manualThreshold, setManualThreshold] = useState(VISUAL_SETTINGS['14d'].threshold);
     const [manualIntensity, setManualIntensity] = useState(VISUAL_SETTINGS['14d'].maxIntensity);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Function to Load/Refresh Settings
+    const loadVisualSettings = async () => {
+        setIsRefreshing(true);
+        try {
+            const res = await fetch('/api/settings/visual');
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data['14d']) {
+                    Object.assign(VISUAL_SETTINGS, data);
+                    if (VISUAL_SETTINGS[forecastHorizon]) {
+                        setManualThreshold(VISUAL_SETTINGS[forecastHorizon].threshold);
+                        setManualIntensity(VISUAL_SETTINGS[forecastHorizon].maxIntensity);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Failed to refresh visual settings", e);
+        } finally {
+            setTimeout(() => setIsRefreshing(false), 500);
+        }
+    };
+
+    // Sync Global Settings on Mount
+    useEffect(() => {
+        loadVisualSettings();
+    }, []); // Run ONCE on mount
+
     const [mapLoaded, setMapLoaded] = useState(false);
     const [mapInstance, setMapInstance] = useState(null);
     const heatmapLayerRef = useRef(null);
@@ -553,8 +583,16 @@ const DengueHeatmap = () => {
 
                                         {/* Forecast Selection Buttons */}
                                         <div className="mt-4 pt-4 border-t border-black/5 animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100">
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
-                                                Forecast Period
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex justify-between items-center">
+                                                <span>Forecast Period</span>
+                                                <button
+                                                    onClick={loadVisualSettings}
+                                                    disabled={isRefreshing}
+                                                    className="text-blue-600 hover:text-blue-800 transition-colors p-1 rounded-full hover:bg-blue-50"
+                                                    title="Refresh Visual Calibration"
+                                                >
+                                                    <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                                                </button>
                                             </label>
                                             <div className="grid grid-cols-3 gap-2">
                                                 {['7d', '14d', '28d'].map((period) => (
@@ -572,55 +610,7 @@ const DengueHeatmap = () => {
                                             </div>
                                         </div>
 
-                                        {/* Visual Calibration Sliders */}
-                                        <div className="mt-4 pt-4 border-t border-black/5 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex justify-between">
-                                                <span>Visual Calibration</span>
-                                                <button
-                                                    onClick={() => {
-                                                        setManualThreshold(VISUAL_SETTINGS[forecastHorizon].threshold);
-                                                        setManualIntensity(VISUAL_SETTINGS[forecastHorizon].maxIntensity);
-                                                    }}
-                                                    className="text-[10px] text-blue-600 hover:text-blue-800"
-                                                >
-                                                    Reset
-                                                </button>
-                                            </label>
 
-                                            {/* Threshold Slider */}
-                                            <div className="mb-2">
-                                                <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                                                    <span>Filter Noise (Min Cases)</span>
-                                                    <span className="font-bold">{manualThreshold}</span>
-                                                </div>
-                                                <input
-                                                    type="range"
-                                                    min="1"
-                                                    max="15"
-                                                    step="1"
-                                                    value={manualThreshold}
-                                                    onChange={(e) => setManualThreshold(parseInt(e.target.value))}
-                                                    className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                                                />
-                                            </div>
-
-                                            {/* Intensity Slider */}
-                                            <div>
-                                                <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                                                    <span>Red Intensity (Max Cases)</span>
-                                                    <span className="font-bold">{manualIntensity}</span>
-                                                </div>
-                                                <input
-                                                    type="range"
-                                                    min="10"
-                                                    max="100"
-                                                    step="5"
-                                                    value={manualIntensity}
-                                                    onChange={(e) => setManualIntensity(parseInt(e.target.value))}
-                                                    className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-500"
-                                                />
-                                            </div>
-                                        </div>
                                     </>
                                 ) : (
                                     // Historical Mode: Filters

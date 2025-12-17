@@ -16,6 +16,13 @@ import {
     DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
 
+// Visual Settings Configuration
+const VISUAL_SETTINGS = {
+    '7d': { threshold: 1, maxIntensity: 22, radius: 0.025 },
+    '14d': { threshold: 3, maxIntensity: 30, radius: 0.028 },
+    '28d': { threshold: 6, maxIntensity: 50, radius: 0.030 }
+};
+
 export default function AdminDashboard() {
     const { data: session, status } = useSession();
     const router = useRouter();
@@ -59,6 +66,94 @@ export default function AdminDashboard() {
             setAlertLoading(false);
         }
     };
+
+    // Visual Calibration State
+    const [forecastHorizon, setForecastHorizon] = useState('14d');
+    const [manualThreshold, setManualThreshold] = useState(VISUAL_SETTINGS['14d'].threshold);
+    const [manualIntensity, setManualIntensity] = useState(VISUAL_SETTINGS['14d'].maxIntensity);
+    const [settingsLoaded, setSettingsLoaded] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // 1. Fetch Cloud Settings on Mount
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch('/api/settings/visual');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data['14d']) { // Basic validation
+                        // Only override if we have valid data.
+                        // For simplicity, we just sync the current view '14d' or whatever is stored?
+                        // Actually, let's just keep the local VISUAL_SETTINGS as 'default'
+                        // but update the CURRENT sliders to match the stored override if it exists.
+                        // For now, let's just trust the user will tweak it.
+                        // If we want FULL sync, we should update the VISUAL_SETTINGS constant basically.
+                        // But constants are read-only. We should prob just load the current forecast values.
+                        // Simplified: Just load the CURRENT forecast period values if available.
+                        // Actually, if we want persistent defaults, we need to update the VISUAL_SETTINGS object structure in state?
+                        // Let's stick to the user request: "toggle... it also change".
+                        // So we load the stored overrides.
+
+                        // Note: We are just saving the 'current' view for simplicity of the prototype?
+                        // No, better to save the whole CONFIG object.
+                        Object.assign(VISUAL_SETTINGS, data); // Mutate the constant for this session? A bit hacky but works for valid session.
+                        if (VISUAL_SETTINGS[forecastHorizon]) {
+                            setManualThreshold(VISUAL_SETTINGS[forecastHorizon].threshold);
+                            setManualIntensity(VISUAL_SETTINGS[forecastHorizon].maxIntensity);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load visual settings", e);
+            } finally {
+                setSettingsLoaded(true);
+            }
+        };
+        fetchSettings();
+    }, []); // Run once
+
+    // 2. Sync Local State Changes to Global Config Object
+    useEffect(() => {
+        if (!settingsLoaded) return;
+        // Update the global config object in memory so switching tabs preserves it
+        if (VISUAL_SETTINGS[forecastHorizon]) {
+            VISUAL_SETTINGS[forecastHorizon].threshold = manualThreshold;
+            VISUAL_SETTINGS[forecastHorizon].maxIntensity = manualIntensity;
+        }
+    }, [manualThreshold, manualIntensity, forecastHorizon, settingsLoaded]);
+
+    // 3. Debounce Auto-Save to Server
+    useEffect(() => {
+        if (!settingsLoaded) return;
+
+        const timer = setTimeout(async () => {
+            setIsSaving(true);
+            try {
+                await fetch('/api/settings/visual', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(VISUAL_SETTINGS)
+                });
+            } catch (e) {
+                console.error("Failed to save settings", e);
+            } finally {
+                setIsSaving(false);
+            }
+        }, 1000); // 1 second debounce
+
+        return () => clearTimeout(timer);
+    }, [manualThreshold, manualIntensity, settingsLoaded]);
+
+    // Sync Manual Settings with Forecast Horizon (Local State Update)
+    // Note: We modified this to NOT reset if we just verified the setting is same.
+    // The previous logic completely overwrote manualThreshold on horizon change.
+    // That is desired behavior (switching to 28d load 28d defaults).
+    useEffect(() => {
+        if (forecastHorizon && VISUAL_SETTINGS[forecastHorizon]) {
+            setManualThreshold(VISUAL_SETTINGS[forecastHorizon].threshold);
+            setManualIntensity(VISUAL_SETTINGS[forecastHorizon].maxIntensity);
+        }
+    }, [forecastHorizon]);
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -334,45 +429,144 @@ export default function AdminDashboard() {
 
                     {activeTab === 'alerts' && (
                         <div className="space-y-8">
-                            <div className="bg-white border rounded-xl p-6 shadow-sm max-w-2xl">
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <h2 className="text-xl font-bold text-[rgb(27,55,121)] mb-2">
-                                            Trigger Email Alerts
-                                        </h2>
-                                        <p className="text-[rgb(27,55,121)]/70 text-sm">
-                                            Manually trigger the backend to scan for high-risk users and send email notifications.
-                                            This is usually an automated scheduled task.
-                                        </p>
-                                    </div>
-                                    <div className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
-                                        ADMIN ONLY
-                                    </div>
-                                </div>
-
-                                <div className="mt-6 border-t pt-6">
-                                    <button
-                                        onClick={runAlertTest}
-                                        disabled={alertLoading}
-                                        className="bg-[rgb(27,55,121)] text-white px-6 py-3 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 disabled:opacity-50 transition-colors text-sm flex items-center gap-3 shadow-lg shadow-[rgb(27,55,121)]/10"
-                                    >
-                                        <Send className="w-4 h-4" />
-                                        {alertLoading ? "Triggering Alerts..." : "Trigger System Scan Now"}
-                                    </button>
-                                </div>
-
-                                {/* Logs Output */}
-                                {alertResponse && (
-                                    <div className="mt-6 rounded-md bg-gray-900 p-4 overflow-hidden shadow-inner animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <div className="flex justify-between items-center mb-2 border-b border-gray-700 pb-2">
-                                            <span className="text-green-400 font-mono text-xs font-bold">SYSTEM LOG</span>
-                                            <span className="text-gray-500 text-[10px] font-mono">{new Date().toLocaleTimeString()}</span>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Left Column: Trigger Alerts */}
+                                <div className="bg-white border rounded-xl p-6 shadow-sm">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <h2 className="text-xl font-bold text-[rgb(27,55,121)] mb-2">
+                                                Trigger Email Alerts
+                                            </h2>
+                                            <p className="text-[rgb(27,55,121)]/70 text-sm">
+                                                Manually trigger the backend to scan for high-risk users and send email notifications.
+                                                This is usually an automated scheduled task.
+                                            </p>
                                         </div>
-                                        <pre className="text-green-400 font-mono text-xs overflow-x-auto custom-scrollbar">
-                                            {JSON.stringify(alertResponse, null, 2)}
-                                        </pre>
+                                        <div className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
+                                            ADMIN ONLY
+                                        </div>
                                     </div>
-                                )}
+
+                                    <div className="mt-6 border-t pt-6">
+                                        <button
+                                            onClick={runAlertTest}
+                                            disabled={alertLoading}
+                                            className="bg-[rgb(27,55,121)] text-white px-6 py-3 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 disabled:opacity-50 transition-colors text-sm flex items-center gap-3 shadow-lg shadow-[rgb(27,55,121)]/10"
+                                        >
+                                            <Send className="w-4 h-4" />
+                                            {alertLoading ? "Triggering Alerts..." : "Trigger System Scan Now"}
+                                        </button>
+                                    </div>
+
+                                    {/* Logs Output */}
+                                    {alertResponse && (
+                                        <div className="mt-6 rounded-md bg-gray-900 p-4 overflow-hidden shadow-inner animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <div className="flex justify-between items-center mb-2 border-b border-gray-700 pb-2">
+                                                <span className="text-green-400 font-mono text-xs font-bold">SYSTEM LOG</span>
+                                                <span className="text-gray-500 text-[10px] font-mono">{new Date().toLocaleTimeString()}</span>
+                                            </div>
+                                            <pre className="text-green-400 font-mono text-xs overflow-x-auto custom-scrollbar">
+                                                {JSON.stringify(alertResponse, null, 2)}
+                                            </pre>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Right Column: Visual Calibration */}
+                                <div className="bg-white border rounded-xl p-6 shadow-sm">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div>
+                                            <h2 className="text-xl font-bold text-[rgb(27,55,121)] mb-2">
+                                                Visual Calibration
+                                            </h2>
+                                            <p className="text-[rgb(27,55,121)]/70 text-sm">
+                                                Construct scale and intensity settings for the heatmap visualization.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Forecast Selection */}
+                                    <div className="mb-6">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+                                            Forecast Period
+                                        </label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {['7d', '14d', '28d'].map((period) => (
+                                                <button
+                                                    key={period}
+                                                    onClick={() => setForecastHorizon(period)}
+                                                    className={`py-2 rounded-lg text-xs font-bold border transition-all ${forecastHorizon === period
+                                                        ? 'bg-[rgb(27,55,121)] border-[rgb(27,55,121)] text-white shadow-md'
+                                                        : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                                        }`}
+                                                >
+                                                    {period.replace('d', '')} Days
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Visual Calibration Sliders */}
+                                    <div className="space-y-6">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest flex justify-between">
+                                            <span>Calibration Controls</span>
+                                            <div className="flex gap-2">
+                                                {isSaving && <span className="text-[10px] text-green-600 animate-pulse">Saving...</span>}
+                                                <button
+                                                    onClick={() => {
+                                                        // Hard Reset Logic (Manual Overrides)
+                                                        const defaults = {
+                                                            '7d': { threshold: 1, maxIntensity: 22 },
+                                                            '14d': { threshold: 3, maxIntensity: 30 },
+                                                            '28d': { threshold: 6, maxIntensity: 50 },
+                                                        };
+                                                        if (defaults[forecastHorizon]) {
+                                                            setManualThreshold(defaults[forecastHorizon].threshold);
+                                                            setManualIntensity(defaults[forecastHorizon].maxIntensity);
+                                                        }
+                                                    }}
+                                                    className="text-[10px] text-[rgb(27,55,121)] hover:underline"
+                                                >
+                                                    Reset to Default
+                                                </button>
+                                            </div>
+                                        </label>
+
+                                        {/* Threshold Slider */}
+                                        <div>
+                                            <div className="flex justify-between text-xs text-gray-600 mb-2">
+                                                <span>Filter Noise (Min Cases)</span>
+                                                <span className="font-bold font-mono bg-gray-100 px-2 py-0.5 rounded text-[rgb(27,55,121)]">{manualThreshold}</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="15"
+                                                step="1"
+                                                value={manualThreshold}
+                                                onChange={(e) => setManualThreshold(parseInt(e.target.value))}
+                                                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[rgb(27,55,121)]"
+                                            />
+                                        </div>
+
+                                        {/* Intensity Slider */}
+                                        <div>
+                                            <div className="flex justify-between text-xs text-gray-600 mb-2">
+                                                <span>Red Intensity (Max Cases)</span>
+                                                <span className="font-bold font-mono bg-gray-100 px-2 py-0.5 rounded text-red-600">{manualIntensity}</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="10"
+                                                max="100"
+                                                step="5"
+                                                value={manualIntensity}
+                                                onChange={(e) => setManualIntensity(parseInt(e.target.value))}
+                                                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-600"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <RiskMonitorTable />
