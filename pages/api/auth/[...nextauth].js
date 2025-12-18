@@ -180,7 +180,7 @@ export const authOptions = {
 
   // Custom pages
   pages: {
-    signIn: '/auth/signin',
+    signIn: '/auth/usertype',
     error: '/auth/error',
     // signOut: '/auth/signout',
   },

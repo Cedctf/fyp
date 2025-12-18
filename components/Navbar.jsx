@@ -183,7 +183,7 @@ const Navbar = ({ isDark }) => {
                                             ) : (
                                                 <>
                                                     <Link
-                                                        href="/auth/signin"
+                                                        href="/auth/usertype"
                                                         onClick={() => setIsOpen(false)}
                                                         className="text-black px-6 py-3 text-xs font-bold tracking-widest uppercase border border-black hover:bg-black hover:text-white transition-colors"
                                                     >

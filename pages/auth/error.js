@@ -65,7 +65,7 @@ export default function ErrorPage() {
 
         <div className="flex flex-col gap-3 pt-4">
           <Link
-            href="/auth/signin"
+            href="/auth/usertype"
             className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Try signing in again
