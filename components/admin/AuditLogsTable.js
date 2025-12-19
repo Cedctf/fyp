@@ -122,47 +122,51 @@ export default function AuditLogsTable({ searchTerm, filterType }) {
 
             {/* Log Details Modal */}
             {selectedLog && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedLog(null)}>
-                    <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 relative" onClick={e => e.stopPropagation()}>
-                        <button
-                            onClick={() => setSelectedLog(null)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
+                <div className="fixed inset-0 z-50 overflow-y-auto" onClick={() => setSelectedLog(null)}>
+                    <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
+                        <div className="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" />
+                        <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+                        <div className="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full sm:p-6" onClick={e => e.stopPropagation()}>
+                            <button
+                                onClick={() => setSelectedLog(null)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
 
-                        <h2 className="text-xl font-semibold mb-4 text-[rgb(27,55,121)] font-serif">Log Details</h2>
+                            <h2 className="text-xl font-semibold mb-4 text-[rgb(27,55,121)] font-serif">Log Details</h2>
 
-                        <div className="space-y-4">
-                            <div>
-                                <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Timestamp</p>
-                                <p className="text-gray-900">{new Date(selectedLog.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}, {new Date(selectedLog.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-4">
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Action</p>
-                                    <span className="inline-block mt-1 text-sm font-semibold text-[rgb(27,55,121)]">
-                                        {selectedLog.action}
-                                    </span>
+                                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Timestamp</p>
+                                    <p className="text-gray-900">{new Date(selectedLog.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}, {new Date(selectedLog.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p>
                                 </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Action</p>
+                                        <span className="inline-block mt-1 text-sm font-semibold text-[rgb(27,55,121)]">
+                                            {selectedLog.action}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Resource</p>
+                                        <p className="text-gray-900 mt-1">{selectedLog.resource}</p>
+                                    </div>
+                                </div>
+
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Resource</p>
-                                    <p className="text-gray-900 mt-1">{selectedLog.resource}</p>
+                                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">User ID</p>
+                                    <p className="text-gray-900 font-mono text-sm">{selectedLog.userId}</p>
                                 </div>
-                            </div>
 
-                            <div>
-                                <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">User ID</p>
-                                <p className="text-gray-900 font-mono text-sm">{selectedLog.userId}</p>
-                            </div>
-
-                            <div>
-                                <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Details JSON</p>
-                                <div className="bg-gray-50 p-3 rounded-md border border-gray-100 overflow-x-auto">
-                                    <pre className="text-xs text-gray-600 font-mono whitespace-pre-wrap break-all">
-                                        {JSON.stringify(selectedLog.details, null, 2)}
-                                    </pre>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Details JSON</p>
+                                    <div className="bg-gray-50 p-3 rounded-md border border-gray-100 overflow-x-auto">
+                                        <pre className="text-xs text-gray-600 font-mono whitespace-pre-wrap break-all">
+                                            {JSON.stringify(selectedLog.details, null, 2)}
+                                        </pre>
+                                    </div>
                                 </div>
                             </div>
                         </div>

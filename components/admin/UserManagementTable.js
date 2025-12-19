@@ -200,156 +200,168 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
 
             {/* Create Admin Modal */}
             {showCreateModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowCreateModal(false)}>
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
-                        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                            <UserPlus className="w-5 h-5" />
-                            Create New Admin
-                        </h2>
-                        <form onSubmit={handleCreateAdmin} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full border rounded-md px-3 py-2"
-                                    value={newAdminData.name}
-                                    onChange={e => setNewAdminData({ ...newAdminData, name: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input
-                                    type="email"
-                                    required
-                                    className="w-full border rounded-md px-3 py-2"
-                                    value={newAdminData.email}
-                                    onChange={e => setNewAdminData({ ...newAdminData, email: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                <input
-                                    type="password"
-                                    required
-                                    minLength={8}
-                                    className="w-full border rounded-md px-3 py-2"
-                                    value={newAdminData.password}
-                                    onChange={e => setNewAdminData({ ...newAdminData, password: e.target.value })}
-                                />
-                            </div>
-                            <div className="flex justify-end gap-3 mt-6">
+                <div className="fixed inset-0 z-50 overflow-y-auto" onClick={() => setShowCreateModal(false)}>
+                    <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
+                        <div className="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" />
+                        <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+                        <div className="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full sm:p-6" onClick={e => e.stopPropagation()}>
+                            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                                <UserPlus className="w-5 h-5" />
+                                Create New Admin
+                            </h2>
+                            <form onSubmit={handleCreateAdmin} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full border rounded-md px-3 py-2"
+                                        value={newAdminData.name}
+                                        onChange={e => setNewAdminData({ ...newAdminData, name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        className="w-full border rounded-md px-3 py-2"
+                                        value={newAdminData.email}
+                                        onChange={e => setNewAdminData({ ...newAdminData, email: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                    <input
+                                        type="password"
+                                        required
+                                        minLength={8}
+                                        className="w-full border rounded-md px-3 py-2"
+                                        value={newAdminData.password}
+                                        onChange={e => setNewAdminData({ ...newAdminData, password: e.target.value })}
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-3 mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCreateModal(false)}
+                                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={createLoading}
+                                        className="px-4 py-2 bg-[rgb(27,55,121)] text-white rounded-md hover:bg-[rgb(27,55,121)]/90 text-sm"
+                                    >
+                                        {createLoading ? 'Creating...' : 'Create Admin'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}{" "}{/* End Create Admin Modal */}
+
+            {/* Demote User Modal */}
+            {demoteModalOpen && userToDemote && (
+                <div className="fixed inset-0 z-50 overflow-y-auto" onClick={() => setDemoteModalOpen(false)}>
+                    <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
+                        <div className="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" />
+                        <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+                        <div className="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full sm:p-6" onClick={e => e.stopPropagation()}>
+                            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2 text-[rgb(27,55,121)]">
+                                <AlertTriangle className="w-5 h-5" />
+                                Demote Admin?
+                            </h2>
+                            <p className="text-gray-600 mb-6">
+                                Are you sure you want to demote <span className="font-semibold text-gray-900">{userToDemote.name}</span> to a regular user? They will lose all administrative privileges.
+                            </p>
+                            <div className="flex justify-end gap-3">
                                 <button
-                                    type="button"
-                                    onClick={() => setShowCreateModal(false)}
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm"
+                                    onClick={() => setDemoteModalOpen(false)}
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium"
+                                    disabled={actionLoading}
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    type="submit"
-                                    disabled={createLoading}
-                                    className="px-4 py-2 bg-[rgb(27,55,121)] text-white rounded-md hover:bg-[rgb(27,55,121)]/90 text-sm"
+                                    onClick={() => executeRoleUpdate(userToDemote._id, 'user')}
+                                    disabled={actionLoading}
+                                    className="px-4 py-2 bg-[rgb(27,55,121)] text-white rounded-md hover:bg-[rgb(27,55,121)]/90 text-sm font-medium"
                                 >
-                                    {createLoading ? 'Creating...' : 'Create Admin'}
+                                    {actionLoading ? 'Demoting...' : 'Demote'}
                                 </button>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Demote User Modal */}
-            {demoteModalOpen && userToDemote && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setDemoteModalOpen(false)}>
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
-                        <h2 className="text-xl font-semibold mb-2 flex items-center gap-2 text-[rgb(27,55,121)]">
-                            <AlertTriangle className="w-5 h-5" />
-                            Demote Admin?
-                        </h2>
-                        <p className="text-gray-600 mb-6">
-                            Are you sure you want to demote <span className="font-semibold text-gray-900">{userToDemote.name}</span> to a regular user? They will lose all administrative privileges.
-                        </p>
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setDemoteModalOpen(false)}
-                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium"
-                                disabled={actionLoading}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => executeRoleUpdate(userToDemote._id, 'user')}
-                                disabled={actionLoading}
-                                className="px-4 py-2 bg-[rgb(27,55,121)] text-white rounded-md hover:bg-[rgb(27,55,121)]/90 text-sm font-medium"
-                            >
-                                {actionLoading ? 'Demoting...' : 'Demote'}
-                            </button>
                         </div>
                     </div>
                 </div>
-            )}
+            )}{" "}{/* End Demote User Modal */}
 
             {/* User Details Modal */}
             {selectedUser && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative" onClick={e => e.stopPropagation()}>
-                        <button
-                            onClick={() => setSelectedUser(null)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
+                <div className="fixed inset-0 z-50 overflow-y-auto" onClick={() => setSelectedUser(null)}>
+                    <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
+                        <div className="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" />
+                        <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+                        <div className="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full sm:p-6" onClick={e => e.stopPropagation()}>
+                            <button
+                                onClick={() => setSelectedUser(null)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
 
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-16 h-16 bg-[rgb(27,55,121)]/10 rounded-full flex items-center justify-center text-[rgb(27,55,121)] text-2xl font-serif font-bold">
-                                {selectedUser.name?.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-semibold text-gray-900">{selectedUser.name}</h2>
-                                <span className="text-xs font-semibold text-[rgb(27,55,121)] mt-1 block">
-                                    {selectedUser.role === 'admin' ? 'Admin' : 'User'}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-3">
-                                <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-16 h-16 bg-[rgb(27,55,121)]/10 rounded-full flex items-center justify-center text-[rgb(27,55,121)] text-2xl font-serif font-bold">
+                                    {selectedUser.name?.charAt(0).toUpperCase()}
+                                </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-700">Email</p>
-                                    <p className="text-sm text-gray-600">{selectedUser.email}</p>
+                                    <h2 className="text-xl font-semibold text-gray-900">{selectedUser.name}</h2>
+                                    <span className="text-xs font-semibold text-[rgb(27,55,121)] mt-1 block">
+                                        {selectedUser.role === 'admin' ? 'Admin' : 'User'}
+                                    </span>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-3">
-                                <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
-                                    <p className="text-sm font-medium text-gray-700">Phone</p>
-                                    <p className="text-sm text-gray-600">{selectedUser.phone || 'Not provided'}</p>
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-3">
+                                    <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Email</p>
+                                        <p className="text-sm text-gray-600">{selectedUser.email}</p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="flex items-start gap-3">
-                                <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
-                                    <p className="text-sm font-medium text-gray-700">Address</p>
-                                    <p className="text-sm text-gray-600">{selectedUser.address || 'Not provided'}</p>
+                                <div className="flex items-start gap-3">
+                                    <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Phone</p>
+                                        <p className="text-sm text-gray-600">{selectedUser.phone || 'Not provided'}</p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="flex items-start gap-3">
-                                <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
-                                    <p className="text-sm font-medium text-gray-700">Joined</p>
-                                    <p className="text-sm text-gray-600">
-                                        {new Date(selectedUser.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}, {new Date(selectedUser.createdAt).toLocaleTimeString()}
-                                    </p>
+                                <div className="flex items-start gap-3">
+                                    <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Address</p>
+                                        <p className="text-sm text-gray-600">{selectedUser.address || 'Not provided'}</p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="pt-4 border-t mt-4">
-                                <p className="text-xs text-gray-400 font-mono">ID: {selectedUser._id}</p>
+                                <div className="flex items-start gap-3">
+                                    <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Joined</p>
+                                        <p className="text-sm text-gray-600">
+                                            {new Date(selectedUser.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}, {new Date(selectedUser.createdAt).toLocaleTimeString()}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 border-t mt-4">
+                                    <p className="text-xs text-gray-400 font-mono">ID: {selectedUser._id}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
