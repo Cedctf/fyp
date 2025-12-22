@@ -125,7 +125,7 @@ export default function ProfilePage() {
               You are not signed in.
             </p>
             <Link
-              href="/auth/signin"
+              href="/auth/usertype"
               className="inline-flex items-center justify-center rounded-md bg-[rgb(27,55,121)] px-4 py-2 text-white text-sm font-medium shadow hover:shadow-md transition"
             >
               Go to sign in
@@ -166,7 +166,6 @@ export default function ProfilePage() {
                         </>
                       ) : (
                         <>
-                          <Edit className="w-4 h-4" />
                           Edit Profile
                         </>
                       )}
@@ -191,9 +190,8 @@ export default function ProfilePage() {
                       type="text"
                       value={formData[key]}
                       onChange={(e) => handleInputChange(key, e.target.value)}
-                      className={`text-lg font-medium text-[rgb(27,55,121)] px-3 py-2 border border-[rgb(27,55,121)]/20 rounded-md focus:ring-2 focus:ring-[rgb(27,55,121)] focus:border-[rgb(27,55,121)] bg-white transition-all duration-200 ${
-                        key === "address" ? "w-full sm:w-auto sm:min-w-[500px]" : key === "phone" ? "w-full sm:w-auto sm:min-w-[500px]" : "min-w-[200px]"
-                      }`}
+                      className={`text-lg font-medium text-[rgb(27,55,121)] px-3 py-2 border border-[rgb(27,55,121)]/20 rounded-md focus:ring-2 focus:ring-[rgb(27,55,121)] focus:border-[rgb(27,55,121)] bg-white transition-all duration-200 ${key === "address" ? "w-full sm:w-auto sm:min-w-[500px]" : key === "phone" ? "w-full sm:w-auto sm:min-w-[500px]" : "min-w-[200px]"
+                        }`}
                     />
                   ) : (
                     <span className="text-lg font-medium text-[rgb(27,55,121)]">

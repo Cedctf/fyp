@@ -82,7 +82,7 @@ export default function SignUp() {
         // Account created but sign in failed
         setError("Account created! Please sign in manually.");
         setTimeout(() => {
-          router.push("/auth/signin");
+          router.push("/auth/usertype");
         }, 2000);
       } else {
         // Success
@@ -153,7 +153,7 @@ export default function SignUp() {
       if (signInResult?.error) {
         setError("Account created! Please sign in manually.");
         setTimeout(() => {
-          router.push("/auth/signin");
+          router.push("/auth/usertype");
         }, 2000);
       } else {
         router.push("/");

@@ -35,8 +35,8 @@ export default async function handler(req, res) {
             }
         );
 
-        if (result.modifiedCount === 0) {
-            return res.status(404).json({ message: 'User not found or no changes made' });
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
         res.status(200).json({ message: 'Profile updated successfully' });

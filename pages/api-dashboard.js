@@ -47,7 +47,7 @@ export default function ApiDashboard() {
     // Redirect to sign in if not authenticated
     useEffect(() => {
         if (status === "unauthenticated") {
-            router.push("/auth/signin");
+            router.push("/auth/usertype");
         }
     }, [status, router]);
 

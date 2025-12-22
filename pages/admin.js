@@ -14,7 +14,7 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         if (status === "unauthenticated") {
-            router.push("/auth/signin");
+            router.push("/auth/usertype");
         } else if (status === "authenticated") {
             if (session.user.role !== 'admin') {
                 router.push("/");
@@ -58,8 +58,8 @@ export default function AdminDashboard() {
                     <button
                         onClick={() => setActiveTab('users')}
                         className={`flex items-center gap-2 px-6 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'users'
-                                ? 'border-[rgb(27,55,121)] text-[rgb(27,55,121)]'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-[rgb(27,55,121)] text-[rgb(27,55,121)]'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         <Users className="w-4 h-4" />
@@ -68,8 +68,8 @@ export default function AdminDashboard() {
                     <button
                         onClick={() => setActiveTab('audit')}
                         className={`flex items-center gap-2 px-6 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'audit'
-                                ? 'border-[rgb(27,55,121)] text-[rgb(27,55,121)]'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-[rgb(27,55,121)] text-[rgb(27,55,121)]'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         <Shield className="w-4 h-4" />

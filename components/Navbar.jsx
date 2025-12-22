@@ -173,7 +173,7 @@ const Navbar = ({ isDark }) => {
                                                         MY PROFILE
                                                     </Link>
                                                     <button
-                                                        onClick={() => { signOut(); setIsOpen(false); }}
+                                                        onClick={() => { signOut({ callbackUrl: '/auth/usertype' }); setIsOpen(false); }}
                                                         className="bg-black text-white px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-[rgb(27,55,121)] transition-colors"
                                                     >
                                                         SIGN OUT
@@ -182,7 +182,7 @@ const Navbar = ({ isDark }) => {
                                             ) : (
                                                 <>
                                                     <Link
-                                                        href="/auth/signin"
+                                                        href="/auth/usertype"
                                                         onClick={() => setIsOpen(false)}
                                                         className="text-black px-6 py-3 text-xs font-bold tracking-widest uppercase border border-black hover:bg-black hover:text-white transition-colors"
                                                     >

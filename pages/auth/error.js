@@ -21,8 +21,8 @@ export default function ErrorPage() {
   const router = useRouter();
   const { error } = router.query;
 
-  const errorMessage = error && errors[error] 
-    ? errors[error] 
+  const errorMessage = error && errors[error]
+    ? errors[error]
     : errors.Default;
 
   return (
@@ -63,12 +63,12 @@ export default function ErrorPage() {
 
         <div className="flex flex-col gap-3 pt-4">
           <Link
-            href="/auth/signin"
+            href="/auth/usertype"
             className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Try signing in again
           </Link>
-          
+
           <Link
             href="/"
             className="rounded-lg border-2 border-gray-300 px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50"

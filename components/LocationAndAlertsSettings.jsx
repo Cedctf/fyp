@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { toast } from "sonner";
 import { useSession } from 'next-auth/react';
 import { MapPin, Bell, Radio } from 'lucide-react';
 import { useLocationTracking } from '@/lib/useLocationTracking';
@@ -11,7 +12,7 @@ export default function LocationAndAlertsSettings() {
   const [alertAccessEnabled, setAlertAccessEnabled] = useState(false);
 
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+
   const hasLoadedRef = useRef(false);
 
   const trackingEnabled = alertAccessEnabled;
@@ -58,7 +59,6 @@ export default function LocationAndAlertsSettings() {
   const handleSaveLocation = async () => {
     setSaving(true);
     setError('');
-    setSuccess('');
 
     try {
       const res = await fetch('/api/user/location-settings', {
@@ -72,8 +72,7 @@ export default function LocationAndAlertsSettings() {
       const data = await res.json();
 
       if (res.ok) {
-        setSuccess('Settings saved successfully');
-        setTimeout(() => setSuccess(''), 3000);
+        toast.success('Settings Update Successfully', { style: { color: '#1B7946' } });
       } else {
         setError(data.message || 'Failed to save settings');
       }
@@ -150,11 +149,7 @@ export default function LocationAndAlertsSettings() {
           {error}
         </div>
       )}
-      {success && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
-          {success}
-        </div>
-      )}
+
     </div>
   );
 }
