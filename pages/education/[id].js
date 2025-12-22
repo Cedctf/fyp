@@ -2,7 +2,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, Calendar, Share2, Bookmark } from 'lucide-react';
+import { ArrowLeft, Calendar, Share2, Bookmark } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import { ARTICLES } from '../../data/articles';
 
@@ -60,10 +60,7 @@ export default function ArticlePage() {
                             <span className="flex items-center gap-1">
                                 <Calendar className="w-3 h-3" /> {article.date}
                             </span>
-                            <span className="w-1 h-1 rounded-full bg-[rgb(27,55,121)]/30"></span>
-                            <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" /> {article.readTime}
-                            </span>
+
                         </div>
 
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[rgb(27,55,121)] leading-[1.1] mb-8 max-w-3xl mx-auto">

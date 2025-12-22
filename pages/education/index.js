@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Navbar from '../../components/Navbar';
-import { Calendar, Clock, ArrowRight, BookOpen, Search, ChevronDown, Check, Plus } from 'lucide-react';
+import { Calendar, ArrowRight, BookOpen, Search, ChevronDown, Check, Plus } from 'lucide-react';
 import { ARTICLES } from '../../data/articles';
 import { getArticlesCollection } from '../../lib/mongodb';
 import {
@@ -17,8 +17,6 @@ const CATEGORIES = ["All", "prevention", "symptoms", "education", "tech & innova
 const SORT_OPTIONS = [
     { value: "newest", label: "Newest First" },
     { value: "oldest", label: "Oldest First" },
-    { value: "readTimeAsc", label: "Reading Time (Shortest)" },
-    { value: "readTimeDesc", label: "Reading Time (Longest)" },
 ];
 
 export default function EducationPage({ dbArticles = [] }) {
@@ -40,10 +38,6 @@ export default function EducationPage({ dbArticles = [] }) {
             return new Date(b.date) - new Date(a.date);
         } else if (sortBy === 'oldest') {
             return new Date(a.date) - new Date(b.date);
-        } else if (sortBy === 'readTimeAsc') {
-            return parseInt(a.readTime) - parseInt(b.readTime);
-        } else if (sortBy === 'readTimeDesc') {
-            return parseInt(b.readTime) - parseInt(a.readTime);
         }
         return 0;
     });
@@ -189,9 +183,6 @@ export default function EducationPage({ dbArticles = [] }) {
                                             <span className="px-5 py-2 rounded-full border border-[rgb(27,55,121)]/20 text-[rgb(27,55,121)] text-xs font-bold uppercase tracking-widest font-sans hover:bg-[rgb(27,55,121)] hover:text-white transition-colors cursor-pointer">
                                                 {featuredArticle.category}
                                             </span>
-                                            <span className="px-5 py-2 rounded-full border border-[rgb(27,55,121)]/20 text-[rgb(27,55,121)] text-xs font-bold uppercase tracking-widest font-sans flex items-center gap-2">
-                                                <Clock className="w-3 h-3" /> {featuredArticle.readTime}
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -328,9 +319,6 @@ export default function EducationPage({ dbArticles = [] }) {
                                             <div className="flex flex-wrap gap-2 mt-2">
                                                 <span className="px-3 py-1 rounded-full border border-[rgb(27,55,121)]/20 text-[rgb(27,55,121)]/60 text-xs font-semibold uppercase tracking-wider font-sans">
                                                     {article.category}
-                                                </span>
-                                                <span className="px-3 py-1 rounded-full border border-[rgb(27,55,121)]/20 text-[rgb(27,55,121)]/60 text-xs font-semibold uppercase tracking-wider flex items-center gap-1 font-sans">
-                                                    <Clock className="w-3 h-3" /> {article.readTime}
                                                 </span>
                                             </div>
                                         </div>
