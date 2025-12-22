@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import { useRouter } from "next/router";
 import "@/styles/globals.css";
 import Footer from "@/components/Footer";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -65,6 +66,7 @@ export default function App({
         </div>
 
         {showFooter && <Footer />}
+        <Toaster position="top-center" />
       </main>
     </SessionProvider>
   );

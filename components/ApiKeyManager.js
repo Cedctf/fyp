@@ -9,6 +9,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { CheckCircle2, AlertTriangle, Edit, Trash2, Plus } from 'lucide-react';
+import { toast } from "sonner";
 
 export default function ApiKeyManager() {
     const { data: session } = useSession();
@@ -57,6 +58,7 @@ export default function ApiKeyManager() {
             if (res.ok) {
                 const data = await res.json();
                 setCreatedKey(data.key);
+                toast.success('API Key Created', { style: { color: '#1B7946' } });
                 setNewKeyName('');
                 setShowCreateDialog(false);
                 fetchKeys();
@@ -83,6 +85,7 @@ export default function ApiKeyManager() {
             const res = await fetch(`/api/keys?keyId=${keyToRevoke._id}`, { method: 'DELETE' });
             if (res.ok) {
                 fetchKeys();
+                toast.success('API Key Revoked', { style: { color: 'rgb(211, 47, 47)' } });
                 setKeyToRevoke(null);
             } else {
                 setError('Failed to revoke key');
@@ -213,39 +216,53 @@ export default function ApiKeyManager() {
 
             {/* Success Dialog for New Key */}
             <Dialog open={!!createdKey} onOpenChange={(open) => !open && setCreatedKey(null)}>
-                <DialogContent className="sm:max-w-4xl border-[rgb(27,55,121)]/20">
-                    <DialogHeader>
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                                <CheckCircle2 className="w-6 h-6 text-green-600" />
-                            </div>
-                            <DialogTitle className="text-2xl font-serif font-semibold text-[rgb(27,55,121)]">
-                                New API Key Generated!
-                            </DialogTitle>
+                <DialogContent className="border-[rgb(27,55,121)]/20 p-6 max-w-3xl">
+                    <DialogHeader className="space-y-3">
+                        <DialogTitle className="text-xl font-bold text-[rgb(27,55,121)]">
+                            Save your key
+                        </DialogTitle>
+                        <div className="space-y-4">
+                            <DialogDescription className="text-[rgb(27,55,121)]/70 text-sm leading-relaxed">
+                                Please save your secret key in a safe place since <span className="font-semibold text-[rgb(27,55,121)]">you won't be able to view it again.</span> Keep it secure, as anyone with your API key can make requests on your behalf. If you do lose it, you'll need to generate a new one.
+                            </DialogDescription>
+
+                            <a href="#" className="text-sm text-[rgb(27,55,121)]/70 underline hover:text-[rgb(27,55,121)] inline-block">
+                                Learn more about API key best practices <span className="inline-block ml-0.5">↗</span>
+                            </a>
                         </div>
-                        <DialogDescription className="text-[rgb(27,55,121)]/70 text-base mt-2">
-                            Please copy this key now. You won't be able to see it again.
-                        </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 mt-4">
-                        <div className="flex items-center gap-2 bg-[rgb(27,55,121)]/5 p-4 border border-[rgb(27,55,121)]/20 rounded-md">
-                            <code className="flex-1 font-mono text-sm text-[rgb(27,55,121)] whitespace-nowrap overflow-x-auto no-scrollbar">
-                                {createdKey?.rawKey}
-                            </code>
-                            <button
-                                onClick={() => {
-                                    navigator.clipboard.writeText(createdKey.rawKey);
-                                }}
-                                className="bg-[rgb(27,55,121)] text-white border border-[rgb(27,55,121)] px-4 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 transition-colors text-sm whitespace-nowrap flex items-center gap-2"
-                            >
-                                <img src="/copy-svgrepo-com.svg" alt="Copy" className="w-4 h-4" />
-                                Copy
-                            </button>
+
+                    <div className="mt-6 space-y-6">
+                        <div className="relative">
+                            <div className="flex items-center justify-between w-full px-3 py-2 bg-[rgb(27,55,121)]/5 border border-[rgb(27,55,121)]/20 rounded-md">
+                                <code className="flex-1 min-w-0 font-mono text-sm text-[rgb(27,55,121)] break-all whitespace-normal mr-2">
+                                    {createdKey?.rawKey}
+                                </code>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(createdKey.rawKey);
+                                        toast.success("Copied to clipboard");
+                                    }}
+                                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[rgb(27,55,121)]/20 rounded text-sm font-medium text-[rgb(27,55,121)] hover:bg-[rgb(27,55,121)]/5 transition-colors shadow-sm"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    Copy
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex justify-end">
+
+                        <div className="space-y-2">
+                            <h4 className="text-sm font-semibold text-[rgb(27,55,121)]">Permissions</h4>
+                            <p className="text-sm text-[rgb(27,55,121)]/70">Read and write API resources</p>
+                        </div>
+
+                        <div className="flex justify-end pt-2">
                             <button
                                 onClick={() => setCreatedKey(null)}
-                                className="bg-[rgb(27,55,121)] text-white px-6 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 transition-colors"
+                                className="px-4 py-2 bg-[rgb(27,55,121)] text-white text-sm font-medium rounded-md hover:bg-[rgb(27,55,121)]/90 transition-colors"
                             >
                                 Done
                             </button>
@@ -306,15 +323,15 @@ export default function ApiKeyManager() {
                                 onClick={() => handleUpdateStatus('active')}
                                 disabled={updating || keyToEdit?.status === 'active'}
                                 className={`p-3 rounded-md border text-left flex items-center justify-between transition-all ${keyToEdit?.status === 'active'
-                                    ? 'bg-green-50 border-green-200 ring-1 ring-green-500'
+                                    ? 'bg-[#1B7946]/10 border-[#1B7946]/20 ring-1 ring-[#1B7946]'
                                     : 'bg-white border-gray-200 hover:border-[rgb(27,55,121)]/30'
                                     }`}
                             >
                                 <div>
-                                    <div className={`font-semibold ${keyToEdit?.status === 'active' ? 'text-green-700' : 'text-gray-700'}`}>Active</div>
+                                    <div className={`font-semibold ${keyToEdit?.status === 'active' ? 'text-[#1B7946]' : 'text-gray-700'}`}>Active</div>
                                     <div className="text-xs text-gray-500">Key can be used for API requests</div>
                                 </div>
-                                {keyToEdit?.status === 'active' && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                                {keyToEdit?.status === 'active' && <CheckCircle2 className="w-5 h-5 text-[#1B7946]" />}
                             </button>
 
                             <button
@@ -374,7 +391,7 @@ export default function ApiKeyManager() {
                                             <div className="font-medium text-[rgb(27,55,121)]">{key.name}</div>
                                         </td>
                                         <td className="px-4 py-4 whitespace-nowrap">
-                                            <span className={`text-xs font-semibold ${key.status === 'inactive' ? 'text-red-600' : 'text-green-600'}`}>
+                                            <span className={`text-xs font-semibold ${key.status === 'inactive' ? 'text-red-600' : 'text-[#1B7946]'}`}>
                                                 {key.status === 'inactive' ? 'Inactive' : 'Active'}
                                             </span>
                                         </td>
