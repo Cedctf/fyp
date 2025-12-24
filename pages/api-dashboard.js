@@ -26,23 +26,7 @@ export default function ApiDashboard() {
     const [testKey, setTestKey] = useState('');
     const [selectedEndpoint, setSelectedEndpoint] = useState('/api/v1/data');
 
-    // Alert Test State
-    const [alertLoading, setAlertLoading] = useState(false);
-    const [alertResponse, setAlertResponse] = useState(null);
 
-    const runAlertTest = async () => {
-        setAlertLoading(true);
-        setAlertResponse(null);
-        try {
-            const res = await fetch('/api/alerts/trigger', { method: 'POST' });
-            const data = await res.json();
-            setAlertResponse(data);
-        } catch (err) {
-            setAlertResponse({ error: "Failed to trigger alerts" });
-        } finally {
-            setAlertLoading(false);
-        }
-    };
 
     // Redirect to sign in if not authenticated
     useEffect(() => {
@@ -107,24 +91,22 @@ export default function ApiDashboard() {
     return (
         <div className="min-h-screen bg-white text-[rgb(27,55,121)] font-sans">
             <Head>
-                <title>API Dashboard</title>
+                <title>API Management Dashboard</title>
                 <meta name="description" content="Manage your API keys and test your integration" />
             </Head>
 
             <Navbar />
 
             <main className="container mx-auto px-4 pt-24 pb-16">
-                <header className="mb-12 mt-8">
-                    <h1 className="text-4xl md:text-5xl font-serif tracking-tight border-none">
-                        API Management
+                <section className="mb-20 mt-8 text-left">
+                    <h1 className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight border-none">
+                        API Management Dashboard
+                        <br />
+                        <span className="text-3xl font-normal font-[family-name:var(--font-inter)] block mt-2">Enabling Seamless Integration Through Secure and Reliable APIs</span>
                     </h1>
-                    <p className="text-[rgb(27,55,121)]/70 mt-3">
-                        Manage your API keys and test your integration with our public endpoints.
-                    </p>
-                    <div className="h-px bg-[rgb(27,55,121)]/15 mt-6" />
-                </header>
+                </section>
 
-                <section className="space-y-10">
+                <section className="space-y-10 pt-10 border-t border-[rgb(27,55,121)]/10">
                     {/* API Key Management */}
                     <ApiKeyManager />
 
@@ -203,7 +185,7 @@ export default function ApiDashboard() {
                         </form>
 
                         {demoError && (
-                            <div className="mx-6 mb-4 rounded-md bg-red-50 border border-red-200 p-4 text-red-600 flex items-center gap-2">
+                            <div className="mx-6 mb-4 rounded-md bg-[rgb(87,17,17)]/5 border border-[rgb(87,17,17)]/20 p-4 text-[rgb(87,17,17)] flex items-center gap-2">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 {demoError}
                             </div>
@@ -240,48 +222,7 @@ export default function ApiDashboard() {
                         )}
                     </div>
 
-                    {/* Divider */}
-                    <div className="h-px bg-[rgb(27,55,121)]/20"></div>
 
-                    {/* Test Alert System */}
-                    <div className="space-y-4">
-                        <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                                <h2 className="text-3xl font-serif font-semibold text-[rgb(27,55,121)] mb-4">
-                                    Test Alert System
-                                </h2>
-                                <p className="text-[rgb(27,55,121)]/70 mt-1">
-                                    Trigger the backend email alert system manually. This will scan for high-risk users and trigger email alerts.
-                                </p>
-                            </div>
-                            <div className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ml-6">
-                                ADMIN ONLY
-                            </div>
-                        </div>
-
-                        <div className="mt-6">
-                            <button
-                                onClick={runAlertTest}
-                                disabled={alertLoading}
-                                className="bg-[rgb(27,55,121)] text-white px-6 py-3 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 disabled:opacity-50 transition-colors text-sm flex items-center gap-3 shadow-lg shadow-[rgb(27,55,121)]/10"
-                            >
-                                <Send className="w-4 h-4" />
-                                {alertLoading ? "Triggering Alerts..." : "Trigger Email Alerts"}
-                            </button>
-                        </div>
-
-                        {alertResponse && (
-                            <div className="mt-6 rounded-md bg-[rgb(27,55,121)] p-4 overflow-hidden shadow-inner animate-in fade-in slide-in-from-top-2 duration-300">
-                                <div className="flex justify-between items-center mb-2 border-b border-[rgb(27,55,121)]/30 pb-2">
-                                    <span className="text-green-400 font-mono text-sm font-bold">System Log</span>
-                                    <span className="text-[rgb(27,55,121)]/50 text-xs font-mono">timestamp: {new Date().toLocaleTimeString()}</span>
-                                </div>
-                                <pre className="text-green-400 font-mono text-sm overflow-x-auto custom-scrollbar">
-                                    {JSON.stringify(alertResponse, null, 2)}
-                                </pre>
-                            </div>
-                        )}
-                    </div>
                     {/* API Documentation */}
                     <div className="h-px bg-[rgb(27,55,121)]/20"></div>
 

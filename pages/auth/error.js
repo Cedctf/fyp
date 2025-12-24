@@ -26,11 +26,11 @@ export default function ErrorPage() {
     : errors.Default;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-red-50 to-orange-100 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[rgb(87,17,17)]/5 to-orange-100 px-4">
       <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-xl text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[rgb(87,17,17)]/10">
           <svg
-            className="h-8 w-8 text-red-600"
+            className="h-8 w-8 text-[rgb(87,17,17)]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -53,13 +53,15 @@ export default function ErrorPage() {
           </p>
         </div>
 
-        {error && (
-          <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
-            <p className="text-xs text-gray-500 font-mono">
-              Error code: {error}
-            </p>
-          </div>
-        )}
+        {
+          error && (
+            <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
+              <p className="text-xs text-gray-500 font-mono">
+                Error code: {error}
+              </p>
+            </div>
+          )
+        }
 
         <div className="flex flex-col gap-3 pt-4">
           <Link
@@ -80,8 +82,8 @@ export default function ErrorPage() {
         <p className="text-sm text-gray-500">
           If this problem persists, please contact support.
         </p>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
 

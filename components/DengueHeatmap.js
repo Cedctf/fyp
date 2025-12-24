@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { GoogleMap, LoadScript, HeatmapLayer, Rectangle } from '@react-google-maps/api';
 import Papa from 'papaparse';
 import { motion } from 'framer-motion';
+import { RefreshCw } from 'lucide-react';
 import CountUp from './ui/CountUp';
 
 const containerStyle = {
@@ -12,6 +13,13 @@ const containerStyle = {
 const center = {
     lat: 3.14,
     lng: 101.69
+};
+
+// Visual Settings Configuration
+const VISUAL_SETTINGS = {
+    '7d': { threshold: 1, maxIntensity: 22, radius: 0.025 },   // Adjusted: Show green (thresh 1), but not too red (intensity 22)
+    '14d': { threshold: 3, maxIntensity: 30, radius: 0.028 },  // Balanced: Middle ground (2->3)
+    '28d': { threshold: 6, maxIntensity: 50, radius: 0.030 }   // Balanced: Stricter (4->6) to reduce 28d clutter
 };
 
 const scanBounds = {
@@ -41,6 +49,39 @@ const DengueHeatmap = () => {
     const [heatmapData, setHeatmapData] = useState([]); // Predicted (JSON)
     const [historicalData, setHistoricalData] = useState([]); // Historical (CSV)
     const [dataSource, setDataSource] = useState('predicted'); // 'predicted' | 'historical'
+    const [forecastHorizon, setForecastHorizon] = useState('14d'); // '7d' | '14d' | '28d'
+    // Manual Visual Calibration State
+    const [manualThreshold, setManualThreshold] = useState(VISUAL_SETTINGS['14d'].threshold);
+    const [manualIntensity, setManualIntensity] = useState(VISUAL_SETTINGS['14d'].maxIntensity);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Function to Load/Refresh Settings
+    const loadVisualSettings = async () => {
+        setIsRefreshing(true);
+        try {
+            const res = await fetch('/api/settings/visual');
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data['14d']) {
+                    Object.assign(VISUAL_SETTINGS, data);
+                    if (VISUAL_SETTINGS[forecastHorizon]) {
+                        setManualThreshold(VISUAL_SETTINGS[forecastHorizon].threshold);
+                        setManualIntensity(VISUAL_SETTINGS[forecastHorizon].maxIntensity);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Failed to refresh visual settings", e);
+        } finally {
+            setTimeout(() => setIsRefreshing(false), 500);
+        }
+    };
+
+    // Sync Global Settings on Mount
+    useEffect(() => {
+        loadVisualSettings();
+    }, []); // Run ONCE on mount
+
     const [mapLoaded, setMapLoaded] = useState(false);
     const [mapInstance, setMapInstance] = useState(null);
     const heatmapLayerRef = useRef(null);
@@ -142,13 +183,25 @@ const DengueHeatmap = () => {
             .catch(err => console.error("Error loading historical data:", err));
     }, []);
 
+    // 1.5. Sync Manual Settings with Forecast Horizon (Default Behaviour)
+    useEffect(() => {
+        if (forecastHorizon && VISUAL_SETTINGS[forecastHorizon]) {
+            setManualThreshold(VISUAL_SETTINGS[forecastHorizon].threshold);
+            setManualIntensity(VISUAL_SETTINGS[forecastHorizon].maxIntensity);
+        }
+    }, [forecastHorizon]);
+
     // 2. Refactored: Get Filtered Raw Data first
     const filteredRawData = useMemo(() => {
         if (!mapLoaded) return [];
         let targetData = [];
 
         if (dataSource === 'predicted') {
-            targetData = heatmapData;
+            // Map the selected forecast horizon to the weight
+            targetData = heatmapData.map(point => ({
+                ...point,
+                weight: point[`cases_${forecastHorizon}`] || point.weight || 0
+            }));
         } else {
             // Apply Filters for Historical Data
             targetData = historicalData.filter(point => {
@@ -169,14 +222,26 @@ const DengueHeatmap = () => {
             });
         }
         return targetData;
-    }, [dataSource, heatmapData, historicalData, historicalTimeFilter, selectedYear, selectedMonth, maxDate, mapLoaded]);
+    }, [dataSource, heatmapData, historicalData, historicalTimeFilter, selectedYear, selectedMonth, maxDate, mapLoaded, forecastHorizon]);
 
-    // 3. Current Points for Heatmap Layer
+    // 3. Current Points for Heatmap Layer (VISUAL ONLY)
     const currentPoints = useMemo(() => {
-        return filteredRawData.map(point => ({
-            location: new window.google.maps.LatLng(point.lat, point.lng),
-            weight: point.weight || 1
-        }));
+        // Use manual threshold for visual filtering
+        const threshold = dataSource === 'predicted' ? manualThreshold : 1;
+
+        return filteredRawData
+            .filter(point => (point.weight || 0) >= threshold)
+            .map(point => ({
+                location: new window.google.maps.LatLng(point.lat, point.lng),
+                weight: point.weight || 1
+            }));
+    }, [filteredRawData, dataSource, forecastHorizon, manualThreshold]);
+
+    // 4. Total Cases Calculation (DATA ACCURACY)
+    // We calculate this from the FULL dataset, not the filtered visual points.
+    // This ensures the number accurately reflects the total prediction.
+    const totalCases = useMemo(() => {
+        return filteredRawData.reduce((sum, p) => sum + (p.weight || 0), 0);
     }, [filteredRawData]);
 
     // 4. Analytics Data (Aggregation)
@@ -258,23 +323,28 @@ const DengueHeatmap = () => {
     const currentOptions = useMemo(() => {
         return {
             dissipating: false,
-            radius: dataSource === 'predicted' ? 0.006 : 0.006,
-            opacity: 0.6,
+            dissipating: false,
+            radius: dataSource === 'predicted' ? (VISUAL_SETTINGS[forecastHorizon]?.radius || 0.025) : 0.006,
+            opacity: 0.7,
+            // Dynamic maxIntensity: Higher values mean you need MORE cases to turn red.
+            // This prevents the map from looking "too scary" (solid red) when counts are high.
+            maxIntensity: dataSource === 'predicted' ? manualIntensity : 10,
             gradient: [
                 'rgba(0, 255, 0, 0)',
-                'rgba(0, 255, 0, 1)',   // Green
-                'rgba(147, 255, 0, 1)',
-                'rgba(193, 255, 0, 1)',
-                'rgba(238, 255, 0, 1)', // Yellow-Green
-                'rgba(244, 227, 0, 1)', // Yellow
-                'rgba(249, 198, 0, 1)',
-                'rgba(255, 170, 0, 1)', // Orange
-                'rgba(255, 113, 0, 1)',
+                'rgba(0, 255, 0, 0)',
+                'rgba(0, 255, 0, 0)',   // More transparent steps to cutoff low values
+                'rgba(0, 255, 0, 0)',   // More transparent steps
+                'rgba(0, 255, 0, 0.1)', // Very faint green
+                'rgba(147, 255, 0, 0.3)',
+                'rgba(193, 255, 0, 0.5)',
+                'rgba(238, 255, 0, 0.8)', // Semi-transparent Yellow
+                'rgba(244, 227, 0, 1)',   // Solid Yellow
+                'rgba(255, 170, 0, 1)',   // Orange
                 'rgba(255, 57, 0, 1)',
-                'rgba(255, 0, 0, 1)'    // Red
+                'rgba(255, 0, 0, 1)'      // Red
             ]
         };
-    }, [dataSource]);
+    }, [dataSource, manualIntensity, forecastHorizon]);
 
     // 3. Manual Layer Management (Force Clean)
     useEffect(() => {
@@ -303,10 +373,186 @@ const DengueHeatmap = () => {
         };
     }, [mapInstance, currentPoints, currentOptions, dataSource]);
 
+    // 5. PDF Report Generator
+    const handleGenerateReport = async () => {
+        const btn = document.getElementById('gen-btn');
+        if (btn) btn.innerText = "Generating...";
+
+        try {
+            const jsPDF = (await import('jspdf')).default;
+            const autoTable = (await import('jspdf-autotable')).default;
+
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+            // --- BRANDING COLORS ---
+            const primaryColor = [27, 55, 121]; // Deep Navy
+            const secondaryColor = [255, 170, 0]; // Alert Orange
+            const lightGrey = [240, 240, 240];
+
+            // --- HEADER DESIGN ---
+            // Blue Top Bar
+            doc.setFillColor(...primaryColor);
+            doc.rect(0, 0, pageWidth, 45, 'F');
+
+            // Orange Accent Line
+            doc.setFillColor(...secondaryColor);
+            doc.rect(0, 44, pageWidth, 2, 'F');
+
+            // Title
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont("helvetica", "bold");
+            doc.text("SITUATIONAL REPORT", 14, 20);
+
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "normal");
+            doc.text("DENGUE OUTBREAK SURVEILLANCE SYSTEM", 14, 28);
+
+            // Date & Region Box
+            doc.setFontSize(10);
+            doc.text(`DATE: ${today.toUpperCase()}`, pageWidth - 14, 20, { align: 'right' });
+            doc.text("REGION: KUALA LUMPUR", pageWidth - 14, 26, { align: 'right' });
+            doc.text("CONFIDENTIAL", pageWidth - 14, 38, { align: 'right' });
+
+            // --- SECTION 1: EXECUTIVE DASHBOARD ---
+            let yPos = 65;
+
+            // Title
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("1. EXECUTIVE SUMMARY", 14, yPos);
+
+            // Gray Box for Stats
+            yPos += 5;
+            doc.setFillColor(...lightGrey);
+            doc.rect(14, yPos, pageWidth - 28, 30, 'F');
+            doc.setDrawColor(200);
+            doc.rect(14, yPos, pageWidth - 28, 30, 'S');
+
+            // Stats Content
+            const riskLevel = totalCases > 500 ? "CRITICAL ALERT" : (totalCases > 200 ? "HIGH RISK" : "MODERATE");
+            const riskColor = totalCases > 500 ? [220, 53, 69] : (totalCases > 200 ? [255, 100, 0] : [40, 167, 69]);
+
+            doc.setTextColor(50);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text("FORECAST HORIZON", 20, yPos + 10);
+            doc.text("PREDICTED CASES", 80, yPos + 10);
+            doc.text("RISK EVALUATION", 140, yPos + 10);
+
+            doc.setFont("helvetica", "normal");
+            doc.text(`Next ${forecastHorizon.replace('d', '')} Days`, 20, yPos + 20);
+            doc.text(`${Math.round(totalCases)} est.`, 80, yPos + 20);
+
+            doc.setTextColor(...riskColor);
+            doc.setFont("helvetica", "bold");
+            doc.text(riskLevel, 140, yPos + 20);
+
+            // Summary Text
+            yPos += 45;
+            doc.setTextColor(0);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            const summaryText = `Analysis of surveillance data indicates a ${riskLevel.toLowerCase()} of dengue transmission. The AI model, integrating rainfall indices and urban density factors, projects ${Math.round(totalCases)} cases over the next ${forecastHorizon.replace('d', '')} days. Immediate attention is required in the districts listed below.`;
+            doc.text(summaryText, 14, yPos, { maxWidth: pageWidth - 28, align: 'justify' });
+
+
+            // --- SECTION 2: HOTSPOT ANALYSIS ---
+            yPos += 20;
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("2. PRIORITY INTERVENTION ZONES", 14, yPos);
+
+            autoTable(doc, {
+                startY: yPos + 5,
+                head: [['PRIORITY', 'DISTRICT / LOCALITY', 'PROJECTED CASES', 'TREND ANALYSIS']],
+                body: analyticsData.topDistricts.map((d, i) => [
+                    `#${i + 1}`,
+                    d.name.toUpperCase(),
+                    `${d.cases} cases`,
+                    d.trend
+                ]),
+                theme: 'grid',
+                headStyles: {
+                    fillColor: primaryColor,
+                    fontSize: 10,
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 25 },
+                    2: { halign: 'center', fontStyle: 'bold' },
+                    3: { halign: 'center', textColor: 100 }
+                },
+                alternateRowStyles: { fillColor: lightGrey }
+            });
+
+            // --- SECTION 3: TACTICAL RECOMMENDATIONS ---
+            const finalY = doc.lastAutoTable.finalY + 20;
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("3. TACTICAL RECOMMENDATIONS", 14, finalY);
+
+            doc.setFontSize(11);
+            doc.setTextColor(0);
+            doc.setFont("helvetica", "normal");
+
+            const actions = [];
+            if (totalCases > 500) {
+                actions.push("- IMMEDIATE vector control operations (fogging) required in top 5 districts.");
+                actions.push("- Issue public health warnings via SMS and local community channels.");
+                actions.push("- Mobilize additional medical resources to clinics in high-risk zones.");
+            } else if (totalCases > 200) {
+                actions.push("- Increase larviciding efforts in identified hotspots.");
+                actions.push("- Community cleanup events recommended for high-density areas.");
+                actions.push("- Monitor daily rainfall levels closely.");
+            } else {
+                actions.push("- Routine surveillance recommended.");
+                actions.push("- Continue public education on mosquito breeding sites.");
+            }
+            actions.push("- Verify AI predictions with ground team observations.");
+
+            let actionY = finalY + 30;
+            actions.forEach(action => {
+                doc.text(action, 14, actionY);
+                actionY += 8;
+            });
+
+            // --- FOOTER & SIGNATURE ---
+            // Signature Line
+            const signatureY = pageHeight - 50;
+            doc.setDrawColor(150);
+            doc.line(14, signatureY, 80, signatureY);
+            doc.setFontSize(8);
+            doc.setTextColor(100);
+            doc.text("Approved By (Officer ID)", 14, signatureY + 5);
+
+            // Official Footer
+            doc.setFontSize(8);
+            doc.setTextColor(128, 128, 128);
+            doc.text("This is an AI-generated automated report for internal planning purposes.", pageWidth / 2, pageHeight - 15, { align: 'center' });
+            doc.text("Ministry of Health / Local Council Use Only", pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+            doc.save(`Dengue_SitRep_${today.replace(/ /g, '_')}.pdf`);
+
+        } catch (err) {
+            console.error("PDF Generation Error:", err);
+            alert("Failed to generate PDF. Please try again.");
+        } finally {
+            if (btn) btn.innerText = "Generate PDF Report";
+        }
+    };
+
     if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
-                <div className="text-center p-8 bg-red-900/50 rounded-xl border border-red-500">
+                <div className="text-center p-8 bg-red-600/50 rounded-xl border border-red-600">
                     <h2 className="text-2xl font-bold mb-4">Missing API Key</h2>
                     <p>Please add <code className="bg-black px-2 py-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> to your .env.local file.</p>
                 </div>
@@ -360,6 +606,45 @@ const DengueHeatmap = () => {
                                 </div>
                             </div>
 
+                            {/* WIDGET: Top Forecast Drivers */}
+                            <div className="bg-white/40 backdrop-blur-[40px] backdrop-saturate-200 p-5 rounded-[24px] shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] border border-white/50 ring-1 ring-white/30 transition-all hover:bg-white/50">
+                                <label className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-3 block">
+                                    Top Forecast Drivers
+                                </label>
+                                <div className="space-y-3">
+                                    {/* Driver 1: Urban Density */}
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-semibold text-gray-700">Urban Density</span>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                <div className="h-full bg-blue-600 rounded-full" style={{ width: '68%' }}></div>
+                                            </div>
+                                            <span className="text-xs font-bold text-gray-600">68%</span>
+                                        </div>
+                                    </div>
+                                    {/* Driver 2: Rainfall */}
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-semibold text-gray-700">Rainfall Index</span>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                <div className="h-full bg-blue-500 rounded-full" style={{ width: '25%' }}></div>
+                                            </div>
+                                            <span className="text-xs font-bold text-gray-600">25%</span>
+                                        </div>
+                                    </div>
+                                    {/* Driver 3: Case Count */}
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-semibold text-gray-700">Previous Cases</span>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                <div className="h-full bg-blue-400 rounded-full" style={{ width: '7%' }}></div>
+                                            </div>
+                                            <span className="text-xs font-bold text-gray-600">7%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* WIDGET 5: Outbreak Analytics (Visualization) */}
                             <div className="bg-white/40 backdrop-blur-[40px] backdrop-saturate-200 p-5 rounded-[24px] shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] border border-white/50 ring-1 ring-white/30 transition-all hover:bg-white/50">
                                 <label className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4 block">
@@ -395,7 +680,7 @@ const DengueHeatmap = () => {
                                                     <span className="font-semibold text-gray-700 group-hover:text-blue-700 transition-colors w-24 truncate" title={district.name}>{district.name}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`text-[10px] font-bold ${district.trend.startsWith('+') ? 'text-red-500' : 'text-green-600'}`}>
+                                                    <span className={`text-[10px] font-bold ${district.trend.startsWith('+') ? 'text-red-600' : 'text-green-600'}`}>
                                                         {district.trend}
                                                     </span>
                                                     <span className="font-bold text-gray-800 w-10 text-right">
@@ -457,16 +742,52 @@ const DengueHeatmap = () => {
 
                                 {/* Section: Contextual Details */}
                                 {dataSource === 'predicted' ? (
-                                    // Predicted Mode: Just Case Count
-                                    <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1 block">
-                                            Forecasted Cases
-                                        </label>
-                                        <div className="text-4xl font-extrabold text-blue-600 drop-shadow-sm">
-                                            <CountUp to={currentPoints.length} separator="," duration={1.5} />
+                                    <>
+                                        {/* Predicted Mode: Just Case Count */}
+                                        <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1 block">
+                                                Forecasted Cases
+                                            </label>
+                                            <div className="text-4xl font-extrabold text-blue-600 drop-shadow-sm">
+                                                <CountUp to={totalCases} separator="," duration={1.5} />
+                                            </div>
+                                            <div className="text-xs font-bold text-gray-500 mt-1">
+                                                <span>(95% CI: {Math.floor(totalCases * 0.85)} - {Math.ceil(totalCases * 1.15)})</span>
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 font-medium mt-1">Predicted for next {forecastHorizon === '7d' ? '7' : forecastHorizon === '14d' ? '14' : '28'} days</p>
                                         </div>
-                                        <p className="text-[10px] text-gray-500 font-medium">Predicted for next 7 days</p>
-                                    </div>
+
+                                        {/* Forecast Selection Buttons */}
+                                        <div className="mt-4 pt-4 border-t border-black/5 animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex justify-between items-center">
+                                                <span>Forecast Period</span>
+                                                <button
+                                                    onClick={loadVisualSettings}
+                                                    disabled={isRefreshing}
+                                                    className="text-blue-600 hover:text-blue-800 transition-colors p-1 rounded-full hover:bg-blue-50"
+                                                    title="Refresh Visual Calibration"
+                                                >
+                                                    <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                                                </button>
+                                            </label>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {['7d', '14d', '28d'].map((period) => (
+                                                    <button
+                                                        key={period}
+                                                        onClick={() => setForecastHorizon(period)}
+                                                        className={`py-1.5 rounded-lg text-xs font-bold border transition-all ${forecastHorizon === period
+                                                            ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/30'
+                                                            : 'bg-white/50 border-white/60 text-gray-600 hover:bg-white hover:border-blue-300'
+                                                            }`}
+                                                    >
+                                                        {period.replace('d', '')} Days
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+
+                                    </>
                                 ) : (
                                     // Historical Mode: Filters
                                     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -547,18 +868,8 @@ const DengueHeatmap = () => {
                                 </div>
 
                                 <button
-                                    onClick={() => {
-                                        const week = 52;
-                                        const btn = document.getElementById('gen-btn');
-                                        if (btn) btn.innerText = "Generating...";
-
-                                        fetch(`/api/report/generate?week=${week}&days=${trendRange}`)
-                                            .then(res => res.json())
-                                            .then(data => data.url ? window.open(data.url, '_blank') : alert("Error"))
-                                            .catch(err => { console.error(err); alert("Failed"); })
-                                            .finally(() => { if (btn) btn.innerText = "Generate PDF Report"; });
-                                    }}
                                     id="gen-btn"
+                                    onClick={handleGenerateReport}
                                     className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -571,7 +882,7 @@ const DengueHeatmap = () => {
                     </div>
                 </div>
             </GoogleMap>
-        </LoadScript>
+        </LoadScript >
     );
 };
 

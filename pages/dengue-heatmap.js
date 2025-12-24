@@ -15,7 +15,7 @@ export default function DengueHeatmapPage() {
             {/* Page Title Overlay */}
             <div className="absolute top-24 left-0 w-full z-20 pointer-events-none">
                 <div className="container mx-auto px-4">
-                    <h1 className="text-3xl md:text-4xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight">
+                    <h1 className="text-5xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight">
                         Dengue Risk Heatmap
                     </h1>
                 </div>

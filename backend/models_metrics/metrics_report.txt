@@ -1,0 +1,24 @@
+DENGUE MODEL EVALUATION REPORT
+==============================
+Date: 2025-12-17 00:23:32.504868
+Test Set: Weeks > 40
+
+[7-Day FORECAST]
+Tolerance Accuracy: 82.04% (Predictions within +/- 1 case)
+MAE:  0.6803 (Avg error in case counts)
+RMSE: 0.8529
+
+[14-Day FORECAST]
+Tolerance Accuracy: 80.11% (Predictions within +/- 1 case)
+MAE:  0.7109 (Avg error in case counts)
+RMSE: 0.9298
+
+[28-Day FORECAST]
+Tolerance Accuracy: 48.90% (Predictions within +/- 1 case)
+MAE:  1.2827 (Avg error in case counts)
+RMSE: 1.6169
+
+TOP 5 DRIVERS OF PREDICTION (14-Day Model):
+Urban_Density     0.679662
+Rainfall_Index    0.253054
+Case_Count        0.067283

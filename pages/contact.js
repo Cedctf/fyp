@@ -220,8 +220,8 @@ export default function Contact() {
                         <div className="grid grid-cols-1 gap-12 items-start">
                             {/* Top: Big Title */}
                             <div className="relative">
-                                <h1 className="text-6xl md:text-8xl font-serif leading-none reveal-text text-[rgb(27,55,121)]">
-                                    Meet<br /><span className="text-[rgb(27,55,121)]/50 italic">Our Team</span>/
+                                <h1 className="text-7xl md:text-8xl font-light font-serif text-[rgb(27,55,121)] leading-[1.1] tracking-tight reveal-text">
+                                    Meet<br />&nbsp;&nbsp;&nbsp;/<span className="text-[rgb(27,55,121)]/50 italic">Our Team</span>
                                 </h1>
                             </div>
 
@@ -231,7 +231,7 @@ export default function Contact() {
                                 <div className="mb-8 overflow-hidden w-full">
                                     <ScrollVelocity
                                         texts={['Collaboration is the heart of innovation.']}
-                                        velocity={50}
+                                        velocity={40}
                                         className="text-3xl md:text-5xl font-serif leading-tight text-[rgb(27,55,121)]"
                                     />
                                 </div>
@@ -246,6 +246,7 @@ export default function Contact() {
                 {/* 1. SUPERVISOR SECTION */}
                 <section className="pb-16">
                     <div className="container mx-auto px-4">
+                        <div className="h-px bg-[rgb(27,55,121)]/20 w-full mb-16" />
                         <div className="flex flex-col lg:flex-row gap-5 lg:gap-10">
                             {/* Left Column: Header */}
                             <div className="lg:w-1/4 flex-shrink-0">
@@ -263,7 +264,7 @@ export default function Contact() {
                                         <img
                                             src="/contact/DrHadi.jpeg"
                                             className="w-full h-full object-cover"
-                                            alt="Dr. Alan Grant"
+                                            alt="Dr. Hadi"
                                         />
                                     </div>
 
@@ -271,25 +272,30 @@ export default function Contact() {
                                     <div className="flex flex-col h-full">
                                         {/* Name & Role */}
                                         <h3 className="text-5xl md:text-6xl font-serif text-[rgb(27,55,121)] mb-2">Dr. Abdul Hadi<br />Mohammad</h3>
-                                        <p className="text-xl text-slate-500 font-serif italic mb-4">Project Supervisor</p>
+                                        <div className="flex justify-between items-end mb-4">
+                                            <p className="text-xl text-slate-500 font-serif italic">Project Supervisor</p>
+                                            <div className="flex items-center gap-3">
+                                                <a href="https://www.linkedin.com/in/abdulhadimohamad/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-[rgb(27,55,121)] transition-colors">
+                                                    <Linkedin className="w-5 h-5" />
+                                                </a>
+                                                <a href="mailto:abdulhadi.mohamad@taylors.edu.my" className="text-slate-400 hover:text-[rgb(27,55,121)] transition-colors">
+                                                    <Mail className="w-5 h-5" />
+                                                </a>
+                                            </div>
+                                        </div>
 
                                         {/* Divider */}
                                         <div className="w-full h-[1px] bg-[rgb(27,55,121)]/20 mb-4"></div>
 
                                         {/* Contact Details */}
-                                        <div className="flex items-center gap-6 mb-4">
-                                            <a href="https://www.linkedin.com/in/abdulhadimohamad/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-[rgb(27,55,121)] transition-colors">
-                                                <Linkedin className="w-6 h-6" />
-                                            </a>
-                                            <a href="mailto:abdulhadi.mohamad@taylors.edu.my" className="text-slate-400 hover:text-[rgb(27,55,121)] transition-colors">
-                                                <Mail className="w-6 h-6" />
-                                            </a>
-                                        </div>
+                                        {/* Updated Spacing */}
+
 
                                         {/* Bio */}
                                         <div className="text-slate-600 leading-relaxed text-lg max-w-lg">
                                             <p className="mb-4">
-                                                Dr. Abdul Hadi Mohammad plays a pivotal role in the DOPEWS-MY project, providing the strategic oversight needed to fuse academic research with industrial innovation. He brings broad-ranging expertise in Data Analytics, Software Engineering, and Public Health, guiding our team to ensure the system meets rigorous professional standards and effectively bridges the gap between theoretical modeling and real-world application.
+                                                Dr. Abdul Hadi Mohammad plays a pivotal role in the DOPEWS-MY project, providing the strategic oversight needed to fuse academic research with industrial innovation.
+                                                He brings broad-ranging expertise in Data Analytics, Software Engineering, and Public Health, guiding our team to ensure the system meets rigorous professional standards and effectively bridges the gap between theoretical modeling and real-world application.
                                             </p>
                                         </div>
                                     </div>

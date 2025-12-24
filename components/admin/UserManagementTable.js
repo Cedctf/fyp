@@ -1,26 +1,30 @@
 import { useState, useEffect } from "react";
-import { Users, Shield, UserPlus, Search, Filter, X, MapPin, Phone, Calendar, Mail } from "lucide-react";
+import { Users, Shield, UserPlus, X, MapPin, Phone, Calendar, Mail, AlertTriangle } from "lucide-react";
 import { useSession } from "next-auth/react";
 
-export default function UserManagementTable() {
+export default function UserManagementTable({ searchTerm, filterRole, showCreateModal, setShowCreateModal }) {
     const { data: session } = useSession();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filterRole, setFilterRole] = useState("ALL");
 
-    // Create User Modal State
-    const [showCreateModal, setShowCreateModal] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null); // For details modal
+    // Create User Modal - State for form data only
     const [newAdminData, setNewAdminData] = useState({ name: '', email: '', password: '' });
     const [createLoading, setCreateLoading] = useState(false);
+
+    // User Details Modal
+    const [selectedUser, setSelectedUser] = useState(null);
+
+    const [demoteModalOpen, setDemoteModalOpen] = useState(false);
+    const [userToDemote, setUserToDemote] = useState(null);
+    const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
         fetchUsers();
     }, []);
 
     const fetchUsers = async () => {
+        setLoading(true);
         try {
             const res = await fetch('/api/admin/users');
             const data = await res.json();
@@ -36,9 +40,19 @@ export default function UserManagementTable() {
         }
     };
 
-    const handleRoleUpdate = async (userId, newRole) => {
-        if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return;
+    const handleRoleUpdate = (user, newRole) => {
+        if (newRole === 'user') {
+            setUserToDemote(user);
+            setDemoteModalOpen(true);
+        } else {
+            if (confirm(`Are you sure you want to promote this user to Admin?`)) {
+                executeRoleUpdate(user._id, newRole);
+            }
+        }
+    };
 
+    const executeRoleUpdate = async (userId, newRole) => {
+        setActionLoading(true);
         try {
             const res = await fetch('/api/admin/users', {
                 method: 'PATCH',
@@ -47,13 +61,17 @@ export default function UserManagementTable() {
             });
 
             if (res.ok) {
-                fetchUsers(); // Refresh list
+                fetchUsers();
+                setDemoteModalOpen(false);
+                setUserToDemote(null);
             } else {
                 const data = await res.json();
                 alert(data.error || "Failed to update role");
             }
         } catch (err) {
             alert("Network error");
+        } finally {
+            setActionLoading(false);
         }
     };
 
@@ -103,105 +121,73 @@ export default function UserManagementTable() {
 
     return (
         <div>
-            <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-serif font-semibold flex items-center gap-3">
-                        <Users className="w-6 h-6" />
-                        User Management
-                    </h2>
-                    <p className="text-[rgb(27,55,121)]/70 mt-1 text-sm">
-                        Manage user roles and access.
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search users..."
-                            className="pl-9 pr-4 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[rgb(27,55,121)] w-64"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="relative">
-                        <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <select
-                            className="pl-9 pr-8 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[rgb(27,55,121)] appearance-none bg-white"
-                            value={filterRole}
-                            onChange={(e) => setFilterRole(e.target.value)}
-                        >
-                            <option value="ALL">All Roles</option>
-                            <option value="user">Users</option>
-                            <option value="admin">Admins</option>
-                        </select>
-                    </div>
-                    <button
-                        onClick={() => setShowCreateModal(true)}
-                        className="bg-[rgb(27,55,121)] text-white px-4 py-2 rounded-md font-semibold hover:bg-[rgb(27,55,121)]/90 transition-colors flex items-center gap-2 text-sm whitespace-nowrap"
-                    >
-                        <UserPlus className="w-4 h-4" />
-                        Create Admin
-                    </button>
-                </div>
-            </header>
-
             {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-200 text-sm">
+                <div className="bg-[rgb(87,17,17)]/5 text-[rgb(87,17,17)] p-4 rounded-lg mb-6 border border-[rgb(87,17,17)]/20 text-sm">
                     {error}
                 </div>
             )}
 
-            <div className="bg-white border border-[rgb(27,55,121)]/10 rounded-lg shadow-sm overflow-hidden">
-                <div className="overflow-x-auto h-[600px] overflow-y-auto relative">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-[rgb(27,55,121)]/60 uppercase bg-gray-50 border-b border-gray-100 sticky top-0 z-10 bg-white shadow-sm">
+            <div className="w-full overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full">
+                        <thead className="border-b border-[rgb(27,55,121)]/20">
                             <tr>
-                                <th className="px-6 py-3 font-semibold">User</th>
-                                <th className="px-6 py-3 font-semibold">Role</th>
-                                <th className="px-6 py-3 font-semibold">Joined</th>
-                                <th className="px-6 py-3 font-semibold text-right">Actions</th>
+                                <th className="pl-4 pr-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">User</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Role</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Provider</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Last Active</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Joined</th>
+                                <th className="pl-6 pr-4 py-3 text-right text-xs font-semibold text-[rgb(27,55,121)] uppercase tracking-wider font-serif">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {filteredUsers.map((user) => (
+                        <tbody>
+                            {filteredUsers.map((user, index) => (
                                 <tr
                                     key={user._id}
-                                    className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                                    className={`hover:bg-[rgb(27,55,121)]/10 transition-colors duration-200 cursor-pointer ${index % 2 === 0 ? '' : 'bg-[rgb(27,55,121)]/5'}`}
                                     onClick={() => setSelectedUser(user)}
                                 >
-                                    <td className="px-6 py-4">
-                                        <div className="font-medium text-[rgb(27,55,121)]">
-                                            {user.name} <span className="text-xs text-gray-400 font-normal ml-1">({user._id})</span>
+                                    <td className="pl-4 pr-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-[rgb(27,55,121)]">
+                                            {user.name}
                                         </div>
-                                        <div className="text-xs text-gray-500">{user.email}</div>
+                                        <div className="text-xs text-[rgb(27,55,121)]/70">{user.email}</div>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
-                                            {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
-                                            {user.role || 'user'}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className="text-xs font-semibold text-[rgb(27,55,121)]">
+                                            {user.role === 'admin' ? 'Admin' : 'User'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-500 text-xs">
-                                        {new Date(user.createdAt).toLocaleDateString()}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-[rgb(27,55,121)]/70 capitalize">
+                                            {user.provider || 'email'}
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-[rgb(27,55,121)]/70">
+                                            {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Never'}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-[rgb(27,55,121)]/70">
+                                            {new Date(user.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        </div>
+                                    </td>
+                                    <td className="pl-6 pr-4 py-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                                         {user.role === 'admin' ? (
                                             <button
-                                                onClick={() => handleRoleUpdate(user._id, 'user')}
-                                                className="text-red-600 hover:text-red-800 text-xs font-medium"
-                                                disabled={user._id === session?.user?.id} // Cannot demote self
+                                                onClick={() => handleRoleUpdate(user, 'user')}
+                                                className="text-[rgb(87,17,17)] hover:text-[rgb(87,17,17)]/80 text-xs font-medium transition-colors"
+                                                disabled={user._id === session?.user?.id}
                                             >
-                                                Demote to User
+                                                Demote
                                             </button>
                                         ) : (
                                             <button
-                                                onClick={() => handleRoleUpdate(user._id, 'admin')}
-                                                className="text-[rgb(27,55,121)] hover:text-[rgb(27,55,121)]/80 text-xs font-medium"
+                                                onClick={() => handleRoleUpdate(user, 'admin')}
+                                                className="text-[rgb(27,55,121)] hover:text-[rgb(27,55,121)]/80 text-xs font-medium transition-colors"
                                             >
-                                                Promote to Admin
+                                                Promote
                                             </button>
                                         )}
                                     </td>
@@ -214,8 +200,8 @@ export default function UserManagementTable() {
 
             {/* Create Admin Modal */}
             {showCreateModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowCreateModal(false)}>
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
                         <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                             <UserPlus className="w-5 h-5" />
                             Create New Admin
@@ -273,10 +259,41 @@ export default function UserManagementTable() {
                 </div>
             )}
 
+            {/* Demote User Modal */}
+            {demoteModalOpen && userToDemote && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setDemoteModalOpen(false)}>
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+                        <h2 className="text-xl font-semibold mb-2 flex items-center gap-2 text-[rgb(27,55,121)]">
+                            <AlertTriangle className="w-5 h-5" />
+                            Demote Admin?
+                        </h2>
+                        <p className="text-gray-600 mb-6">
+                            Are you sure you want to demote <span className="font-semibold text-gray-900">{userToDemote.name}</span> to a regular user? They will lose all administrative privileges.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setDemoteModalOpen(false)}
+                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium"
+                                disabled={actionLoading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => executeRoleUpdate(userToDemote._id, 'user')}
+                                disabled={actionLoading}
+                                className="px-4 py-2 bg-[rgb(27,55,121)] text-white rounded-md hover:bg-[rgb(27,55,121)]/90 text-sm font-medium"
+                            >
+                                {actionLoading ? 'Demoting...' : 'Demote'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* User Details Modal */}
             {selectedUser && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative text-left" onClick={e => e.stopPropagation()}>
                         <button
                             onClick={() => setSelectedUser(null)}
                             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
@@ -284,51 +301,49 @@ export default function UserManagementTable() {
                             <X className="w-5 h-5" />
                         </button>
 
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-16 h-16 bg-[rgb(27,55,121)]/10 rounded-full flex items-center justify-center text-[rgb(27,55,121)] text-2xl font-serif font-bold">
+                        <div className="flex items-center gap-4 mb-6 border-b pb-6">
+                            <div className="shrink-0 w-16 h-16 bg-[rgb(27,55,121)]/10 rounded-full flex items-center justify-center text-[rgb(27,55,121)] text-2xl font-serif font-bold">
                                 {selectedUser.name?.charAt(0).toUpperCase()}
                             </div>
-                            <div>
-                                <h2 className="text-xl font-semibold text-gray-900">{selectedUser.name}</h2>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1
-                                    ${selectedUser.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
-                                    {selectedUser.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
-                                    {selectedUser.role || 'user'}
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-xl font-semibold text-gray-900 truncate">{selectedUser.name}</h2>
+                                <span className="text-xs font-semibold text-[rgb(27,55,121)] mt-1 block">
+                                    {selectedUser.role === 'admin' ? 'Admin' : 'User'}
                                 </span>
                             </div>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-3">
-                                <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
+                        <div className="space-y-5">
+                            <div className="flex items-start gap-4">
+                                <Mail className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-700">Email</p>
-                                    <p className="text-sm text-gray-600">{selectedUser.email}</p>
+                                    <p className="text-sm text-gray-600 break-words">{selectedUser.email}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-3">
-                                <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
+                            <div className="flex items-start gap-4">
+                                <Phone className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-700">Phone</p>
-                                    <p className="text-sm text-gray-600">{selectedUser.phone || 'Not provided'}</p>
+                                    <p className="text-sm text-gray-600 break-words">{selectedUser.phone || 'Not provided'}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-3">
-                                <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
+                            <div className="flex items-start gap-4">
+                                <MapPin className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-700">Address</p>
-                                    <p className="text-sm text-gray-600">{selectedUser.address || 'Not provided'}</p>
+                                    <p className="text-sm text-gray-600 break-words">{selectedUser.address || 'Not provided'}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-3">
-                                <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
+                            <div className="flex items-start gap-4">
+                                <Calendar className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-700">Joined</p>
                                     <p className="text-sm text-gray-600">
-                                        {new Date(selectedUser.createdAt).toLocaleDateString()} at {new Date(selectedUser.createdAt).toLocaleTimeString()}
+                                        {new Date(selectedUser.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}, {new Date(selectedUser.createdAt).toLocaleTimeString()}
                                     </p>
                                 </div>
                             </div>

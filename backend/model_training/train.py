@@ -1,183 +1,74 @@
-# backend/reporting/weekly_report.py
-
-import json
-import os
-import argparse
-
-import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.ensemble import GradientBoostingRegressor
+import joblib
+import os
 
-from reportlab.platypus import (
-    SimpleDocTemplate,
-    Paragraph,
-    Spacer,
-    Image,
-    Table,
-    TableStyle,
-)
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
-from reportlab.lib.units import inch
+# CONFIG
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(BASE_DIR, 'ultimate_combined_data.csv')
+MODELS_DIR = os.path.join(BASE_DIR, '..', 'models')
 
+# Ensure models directory exists
+os.makedirs(MODELS_DIR, exist_ok=True)
 
-# ==============================
-# LOAD DATA
-# ==============================
-def load_csv(csv_path):
-    if not os.path.exists(csv_path):
-        raise FileNotFoundError(f"CSV not found: {csv_path}")
-    return pd.read_csv(csv_path)
+def train_and_save():
+    print("⏳ Loading Data...")
+    try:
+        df = pd.read_csv(DATA_PATH)
+    except FileNotFoundError:
+        print(f"❌ Error: CSV not found at {DATA_PATH}")
+        return
 
+    # 1. Feature Engineering (Micro-Locations)
+    df['Lat_Fine'] = df['Latitude'].round(3)
+    df['Long_Fine'] = df['Longitude'].round(3)
+    df['Location_ID'] = df['Lat_Fine'].astype(str) + "_" + df['Long_Fine'].astype(str)
 
-def load_predictions(json_path):
-    if not os.path.exists(json_path):
-        raise FileNotFoundError(f"Prediction JSON not found: {json_path}")
-    with open(json_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return pd.DataFrame(data)
+    print("📊 Aggregating Data...")
+    weekly = df.groupby(['Location_ID', 'Week']).agg({
+        'Patient_ID': 'count',
+        'Rainfall_Index': 'mean',
+        'Urban_Density': 'mean',
+        'Lat_Fine': 'first',
+        'Long_Fine': 'first',
+        'District': 'first'
+    }).rename(columns={'Patient_ID': 'Case_Count'}).reset_index()
+    
+    weekly = weekly.sort_values(['Location_ID', 'Week'])
 
+    # 2. Create Targets (7, 14, 28 Days)
+    weekly['W1'] = weekly.groupby('Location_ID')['Case_Count'].shift(-1)
+    weekly['W2'] = weekly.groupby('Location_ID')['Case_Count'].shift(-2)
+    w3 = weekly.groupby('Location_ID')['Case_Count'].shift(-3)
+    w4 = weekly.groupby('Location_ID')['Case_Count'].shift(-4)
+    weekly['W34'] = w3.fillna(0) + w4.fillna(0)
 
-# ==============================
-# HOTSPOT DETECTION
-# ==============================
-def detect_hotspots(df):
-    mean_w = df["weight"].mean()
-    std_w = df["weight"].std(ddof=0)
-    threshold = mean_w + std_w
+    # 3. Save "Latest Status" Database (For Location Lookup Mode)
+    # We take the most recent data point for every location to serve as our "Real World Map"
+    latest_db = weekly.sort_values('Week').groupby('Location_ID').tail(1).copy()
+    joblib.dump(latest_db, os.path.join(MODELS_DIR, 'location_db.pkl'))
+    print("✅ Location Database Saved")
 
-    df["is_hotspot"] = df["weight"] >= threshold
-    df["threshold"] = threshold
-    return df
+    # 4. Train Models
+    train_df = weekly.dropna(subset=['W1', 'W2', 'W34'])
+    features = ['Rainfall_Index', 'Urban_Density', 'Case_Count']
 
+    print("🧠 Training AI Models...")
+    
+    model_7d = GradientBoostingRegressor(n_estimators=100, max_depth=3)
+    model_7d.fit(train_df[features], train_df['W1'])
+    joblib.dump(model_7d, os.path.join(MODELS_DIR, 'model_7d.pkl'))
 
-# ==============================
-# PLOTS
-# ==============================
-def plot_weekly_trend(hist_df, week, out_path):
-    trend = hist_df.groupby("Week").size().sort_index()
+    model_14d = GradientBoostingRegressor(n_estimators=100, max_depth=3)
+    model_14d.fit(train_df[features], train_df['W2'])
+    joblib.dump(model_14d, os.path.join(MODELS_DIR, 'model_14d.pkl'))
 
-    plt.figure(figsize=(8, 4))
-    plt.plot(trend.index, trend.values, marker="o")
-    plt.axvline(week, color="red", linestyle="--", label=f"Week {week}")
-    plt.title("Weekly Dengue Case Trend (Historical)")
-    plt.xlabel("Week")
-    plt.ylabel("Total Cases")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(out_path, dpi=150)
-    plt.close()
+    model_28d = GradientBoostingRegressor(n_estimators=100, max_depth=3)
+    model_28d.fit(train_df[features], train_df['W34'])
+    joblib.dump(model_28d, os.path.join(MODELS_DIR, 'model_28d.pkl'))
 
-
-def plot_hotspot_map(pred_df, out_path):
-    plt.figure(figsize=(6, 6))
-
-    normal = pred_df[~pred_df["is_hotspot"]]
-    hotspot = pred_df[pred_df["is_hotspot"]]
-
-    plt.scatter(normal["lng"], normal["lat"], s=30, alpha=0.4, label="Normal")
-    plt.scatter(hotspot["lng"], hotspot["lat"], s=60, color="red", label="Hotspot")
-
-    plt.title("Predicted Dengue Hotspot Map")
-    plt.xlabel("Longitude")
-    plt.ylabel("Latitude")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(out_path, dpi=150)
-    plt.close()
-
-
-# ==============================
-# PDF GENERATION
-# ==============================
-def build_pdf(week, pred_df, trend_img, map_img, out_pdf):
-    styles = getSampleStyleSheet()
-    doc = SimpleDocTemplate(out_pdf, pagesize=A4)
-    story = []
-
-    story.append(Paragraph(
-        f"Dengue Weekly Hotspot Report – Week {week}",
-        styles["Title"]
-    ))
-    story.append(Spacer(1, 12))
-
-    total_risk = pred_df["weight"].sum()
-    avg_risk = pred_df["weight"].mean()
-    hotspot_count = pred_df["is_hotspot"].sum()
-    threshold = pred_df["threshold"].iloc[0]
-
-    summary = [
-        f"Total Predicted Risk: {total_risk:.2f}",
-        f"Average Grid Risk: {avg_risk:.2f}",
-        f"Hotspot Threshold (Mean + Std): {threshold:.2f}",
-        f"Number of Hotspot Grids: {hotspot_count}",
-    ]
-
-    for line in summary:
-        story.append(Paragraph(line, styles["Normal"]))
-
-    story.append(Spacer(1, 12))
-
-    story.append(Paragraph("Historical Weekly Trend", styles["Heading2"]))
-    story.append(Image(trend_img, width=5.5 * inch, height=3 * inch))
-    story.append(Spacer(1, 12))
-
-    story.append(Paragraph("Predicted Spatial Hotspots", styles["Heading2"]))
-    story.append(Image(map_img, width=5.5 * inch, height=5 * inch))
-    story.append(Spacer(1, 12))
-
-    story.append(Paragraph("Hotspot Grid Summary", styles["Heading2"]))
-
-    hotspots = pred_df[pred_df["is_hotspot"]].sort_values("weight", ascending=False)
-
-    if hotspots.empty:
-        story.append(Paragraph("No hotspots detected.", styles["Normal"]))
-    else:
-        table_data = [["#", "Latitude", "Longitude", "Risk Weight"]]
-        for i, r in enumerate(hotspots.itertuples(), start=1):
-            table_data.append([i, f"{r.lat:.5f}", f"{r.lng:.5f}", f"{r.weight:.2f}"])
-
-        table = Table(table_data)
-        table.setStyle(TableStyle([
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-            ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ]))
-        story.append(table)
-
-    doc.build(story)
-
-
-# ==============================
-# MAIN
-# ==============================
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--week", type=int, required=True)
-    parser.add_argument("--predictions", default="public/heatmap_data.json")
-    parser.add_argument("--csv", default="public/ultimate_combined_data.csv")
-    parser.add_argument("--outdir", default="public/reports")
-    args = parser.parse_args()
-
-    os.makedirs(args.outdir, exist_ok=True)
-
-    hist_df = load_csv(args.csv)
-    pred_df = load_predictions(args.predictions)
-    pred_df = detect_hotspots(pred_df)
-
-    trend_img = os.path.join(args.outdir, f"week_{args.week}_trend.png")
-    map_img = os.path.join(args.outdir, f"week_{args.week}_map.png")
-    pdf_path = os.path.join(args.outdir, f"dengue_week_{args.week}_report.pdf")
-
-    plot_weekly_trend(hist_df, args.week, trend_img)
-    plot_hotspot_map(pred_df, map_img)
-    build_pdf(args.week, pred_df, trend_img, map_img, pdf_path)
-
-    print(f"Report generated: {pdf_path}")
-
+    print("🎉 All Models Trained & Saved successfully!")
 
 if __name__ == "__main__":
-    main()
+    train_and_save()
