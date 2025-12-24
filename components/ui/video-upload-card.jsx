@@ -256,22 +256,19 @@ const UploadCardBase = ({
               : "bg-[rgb(27,55,121)]/5",
           className
         )}>
-        {/* Upload icon in background - only shows when no children */}
-        {!hasChildren && (
-          <div
-            className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <Upload
-              size={32}
-              className={cn(
-                "transition-colors duration-200",
-                isDragOver ? "text-[rgb(27,55,121)]" : "text-[rgb(27,55,121)]/20",
-                isUploading && "text-[rgb(27,55,121)]"
-              )} />
-          </div>
+        {/* Upload icon in background - shows when no children */}
+        {!hasChildren ? (
+          <Upload
+            size={32}
+            className={cn(
+              "transition-colors duration-200 pointer-events-none",
+              isDragOver ? "text-[rgb(27,55,121)]" : "text-[rgb(27,55,121)]/20",
+              isUploading && "text-[rgb(27,55,121)]"
+            )} />
+        ) : (
+          /* Content layer */
+          <div className="relative z-10 w-full">{children}</div>
         )}
-
-        {/* Content layer - above the background icon */}
-        <div className="relative z-10 w-full">{children}</div>
       </div>
       {/* Dashed border overlay - z-20, sits above video component */}
       <div

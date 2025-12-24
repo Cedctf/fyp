@@ -449,7 +449,7 @@ export default function AdminDashboard() {
                                 <div className="space-y-6">
                                     {/* Trigger Panel */}
                                     <div className="bg-white border rounded-xl p-6 shadow-sm">
-                                        <div className="flex items-start justify-between">
+                                        <div className="flex items-center justify-between gap-4">
                                             <div>
                                                 <h2 className="text-xl font-bold text-[rgb(27,55,121)] mb-2">
                                                     Trigger Email Alerts
@@ -458,7 +458,7 @@ export default function AdminDashboard() {
                                                     Manually trigger the backend to scan for high-risk users and send email notifications.
                                                 </p>
                                             </div>
-                                            <div className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
+                                            <div className="flex-shrink-0 bg-red-50 border border-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
                                                 ADMIN ONLY
                                             </div>
                                         </div>
@@ -707,17 +707,8 @@ function RiskMonitorTable() {
                         Live surveillance of high-risk zones across Kuala Lumpur based on AI predictions.
                     </p>
                 </div>
-                <div className="flex gap-4 text-sm font-medium">
-                    <div className="flex flex-col items-end">
-                        <span className="text-[rgb(27,55,121)]/50 text-xs uppercase tracking-wider">Total Scanned</span>
-                        <span className="text-[rgb(27,55,121)]">{riskData.total_locations_scanned} Locations</span>
-                    </div>
-                    <div className="flex flex-col items-end">
-                        <span className="text-[rgb(27,55,121)]/50 text-xs uppercase tracking-wider">High Risk Detected</span>
-                        <span className="text-red-600">{riskData.high_risk_count} Areas</span>
-                    </div>
-                </div>
             </div>
+
 
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
@@ -728,7 +719,6 @@ function RiskMonitorTable() {
                             <th className="px-4 py-3 font-semibold">Streak</th>
                             <th className="px-4 py-3 font-semibold">Current Cases</th>
                             <th className="px-4 py-3 font-semibold">Predicted (7 Days)</th>
-                            <th className="px-4 py-3 font-semibold">Status</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -759,12 +749,6 @@ function RiskMonitorTable() {
                                     <td className="px-4 py-3 text-[rgb(27,55,121)] font-bold">
                                         {area.predicted_cases_7d} <span className="text-xs font-normal text-gray-400">cases</span>
                                     </td>
-                                    <td className="px-4 py-3">
-                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 animate-pulse">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
-                                            HIGH RISK
-                                        </span>
-                                    </td>
                                 </tr>
                             ))
                         ) : (
@@ -777,6 +761,6 @@ function RiskMonitorTable() {
                     </tbody>
                 </table>
             </div>
-        </div>
+        </div >
     );
 }

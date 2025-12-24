@@ -373,6 +373,182 @@ const DengueHeatmap = () => {
         };
     }, [mapInstance, currentPoints, currentOptions, dataSource]);
 
+    // 5. PDF Report Generator
+    const handleGenerateReport = async () => {
+        const btn = document.getElementById('gen-btn');
+        if (btn) btn.innerText = "Generating...";
+
+        try {
+            const jsPDF = (await import('jspdf')).default;
+            const autoTable = (await import('jspdf-autotable')).default;
+
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+            // --- BRANDING COLORS ---
+            const primaryColor = [27, 55, 121]; // Deep Navy
+            const secondaryColor = [255, 170, 0]; // Alert Orange
+            const lightGrey = [240, 240, 240];
+
+            // --- HEADER DESIGN ---
+            // Blue Top Bar
+            doc.setFillColor(...primaryColor);
+            doc.rect(0, 0, pageWidth, 45, 'F');
+
+            // Orange Accent Line
+            doc.setFillColor(...secondaryColor);
+            doc.rect(0, 44, pageWidth, 2, 'F');
+
+            // Title
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont("helvetica", "bold");
+            doc.text("SITUATIONAL REPORT", 14, 20);
+
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "normal");
+            doc.text("DENGUE OUTBREAK SURVEILLANCE SYSTEM", 14, 28);
+
+            // Date & Region Box
+            doc.setFontSize(10);
+            doc.text(`DATE: ${today.toUpperCase()}`, pageWidth - 14, 20, { align: 'right' });
+            doc.text("REGION: KUALA LUMPUR", pageWidth - 14, 26, { align: 'right' });
+            doc.text("CONFIDENTIAL", pageWidth - 14, 38, { align: 'right' });
+
+            // --- SECTION 1: EXECUTIVE DASHBOARD ---
+            let yPos = 65;
+
+            // Title
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("1. EXECUTIVE SUMMARY", 14, yPos);
+
+            // Gray Box for Stats
+            yPos += 5;
+            doc.setFillColor(...lightGrey);
+            doc.rect(14, yPos, pageWidth - 28, 30, 'F');
+            doc.setDrawColor(200);
+            doc.rect(14, yPos, pageWidth - 28, 30, 'S');
+
+            // Stats Content
+            const riskLevel = totalCases > 500 ? "CRITICAL ALERT" : (totalCases > 200 ? "HIGH RISK" : "MODERATE");
+            const riskColor = totalCases > 500 ? [220, 53, 69] : (totalCases > 200 ? [255, 100, 0] : [40, 167, 69]);
+
+            doc.setTextColor(50);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text("FORECAST HORIZON", 20, yPos + 10);
+            doc.text("PREDICTED CASES", 80, yPos + 10);
+            doc.text("RISK EVALUATION", 140, yPos + 10);
+
+            doc.setFont("helvetica", "normal");
+            doc.text(`Next ${forecastHorizon.replace('d', '')} Days`, 20, yPos + 20);
+            doc.text(`${Math.round(totalCases)} est.`, 80, yPos + 20);
+
+            doc.setTextColor(...riskColor);
+            doc.setFont("helvetica", "bold");
+            doc.text(riskLevel, 140, yPos + 20);
+
+            // Summary Text
+            yPos += 45;
+            doc.setTextColor(0);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            const summaryText = `Analysis of surveillance data indicates a ${riskLevel.toLowerCase()} of dengue transmission. The AI model, integrating rainfall indices and urban density factors, projects ${Math.round(totalCases)} cases over the next ${forecastHorizon.replace('d', '')} days. Immediate attention is required in the districts listed below.`;
+            doc.text(summaryText, 14, yPos, { maxWidth: pageWidth - 28, align: 'justify' });
+
+
+            // --- SECTION 2: HOTSPOT ANALYSIS ---
+            yPos += 20;
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("2. PRIORITY INTERVENTION ZONES", 14, yPos);
+
+            autoTable(doc, {
+                startY: yPos + 5,
+                head: [['PRIORITY', 'DISTRICT / LOCALITY', 'PROJECTED CASES', 'TREND ANALYSIS']],
+                body: analyticsData.topDistricts.map((d, i) => [
+                    `#${i + 1}`,
+                    d.name.toUpperCase(),
+                    `${d.cases} cases`,
+                    d.trend
+                ]),
+                theme: 'grid',
+                headStyles: {
+                    fillColor: primaryColor,
+                    fontSize: 10,
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 25 },
+                    2: { halign: 'center', fontStyle: 'bold' },
+                    3: { halign: 'center', textColor: 100 }
+                },
+                alternateRowStyles: { fillColor: lightGrey }
+            });
+
+            // --- SECTION 3: TACTICAL RECOMMENDATIONS ---
+            const finalY = doc.lastAutoTable.finalY + 20;
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("3. TACTICAL RECOMMENDATIONS", 14, finalY);
+
+            doc.setFontSize(11);
+            doc.setTextColor(0);
+            doc.setFont("helvetica", "normal");
+
+            const actions = [];
+            if (totalCases > 500) {
+                actions.push("- IMMEDIATE vector control operations (fogging) required in top 5 districts.");
+                actions.push("- Issue public health warnings via SMS and local community channels.");
+                actions.push("- Mobilize additional medical resources to clinics in high-risk zones.");
+            } else if (totalCases > 200) {
+                actions.push("- Increase larviciding efforts in identified hotspots.");
+                actions.push("- Community cleanup events recommended for high-density areas.");
+                actions.push("- Monitor daily rainfall levels closely.");
+            } else {
+                actions.push("- Routine surveillance recommended.");
+                actions.push("- Continue public education on mosquito breeding sites.");
+            }
+            actions.push("- Verify AI predictions with ground team observations.");
+
+            let actionY = finalY + 30;
+            actions.forEach(action => {
+                doc.text(action, 14, actionY);
+                actionY += 8;
+            });
+
+            // --- FOOTER & SIGNATURE ---
+            // Signature Line
+            const signatureY = pageHeight - 50;
+            doc.setDrawColor(150);
+            doc.line(14, signatureY, 80, signatureY);
+            doc.setFontSize(8);
+            doc.setTextColor(100);
+            doc.text("Approved By (Officer ID)", 14, signatureY + 5);
+
+            // Official Footer
+            doc.setFontSize(8);
+            doc.setTextColor(128, 128, 128);
+            doc.text("This is an AI-generated automated report for internal planning purposes.", pageWidth / 2, pageHeight - 15, { align: 'center' });
+            doc.text("Ministry of Health / Local Council Use Only", pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+            doc.save(`Dengue_SitRep_${today.replace(/ /g, '_')}.pdf`);
+
+        } catch (err) {
+            console.error("PDF Generation Error:", err);
+            alert("Failed to generate PDF. Please try again.");
+        } finally {
+            if (btn) btn.innerText = "Generate PDF Report";
+        }
+    };
+
     if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
@@ -692,18 +868,8 @@ const DengueHeatmap = () => {
                                 </div>
 
                                 <button
-                                    onClick={() => {
-                                        const week = 52;
-                                        const btn = document.getElementById('gen-btn');
-                                        if (btn) btn.innerText = "Generating...";
-
-                                        fetch(`/api/report/generate?week=${week}&days=${trendRange}`)
-                                            .then(res => res.json())
-                                            .then(data => data.url ? window.open(data.url, '_blank') : alert("Error"))
-                                            .catch(err => { console.error(err); alert("Failed"); })
-                                            .finally(() => { if (btn) btn.innerText = "Generate PDF Report"; });
-                                    }}
                                     id="gen-btn"
+                                    onClick={handleGenerateReport}
                                     className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

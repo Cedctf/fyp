@@ -293,7 +293,7 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
             {/* User Details Modal */}
             {selectedUser && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative text-left" onClick={e => e.stopPropagation()}>
                         <button
                             onClick={() => setSelectedUser(null)}
                             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
@@ -301,46 +301,46 @@ export default function UserManagementTable({ searchTerm, filterRole, showCreate
                             <X className="w-5 h-5" />
                         </button>
 
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-16 h-16 bg-[rgb(27,55,121)]/10 rounded-full flex items-center justify-center text-[rgb(27,55,121)] text-2xl font-serif font-bold">
+                        <div className="flex items-center gap-4 mb-6 border-b pb-6">
+                            <div className="shrink-0 w-16 h-16 bg-[rgb(27,55,121)]/10 rounded-full flex items-center justify-center text-[rgb(27,55,121)] text-2xl font-serif font-bold">
                                 {selectedUser.name?.charAt(0).toUpperCase()}
                             </div>
-                            <div>
-                                <h2 className="text-xl font-semibold text-gray-900">{selectedUser.name}</h2>
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-xl font-semibold text-gray-900 truncate">{selectedUser.name}</h2>
                                 <span className="text-xs font-semibold text-[rgb(27,55,121)] mt-1 block">
                                     {selectedUser.role === 'admin' ? 'Admin' : 'User'}
                                 </span>
                             </div>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-3">
-                                <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
+                        <div className="space-y-5">
+                            <div className="flex items-start gap-4">
+                                <Mail className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-700">Email</p>
-                                    <p className="text-sm text-gray-600">{selectedUser.email}</p>
+                                    <p className="text-sm text-gray-600 break-words">{selectedUser.email}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-3">
-                                <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
+                            <div className="flex items-start gap-4">
+                                <Phone className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-700">Phone</p>
-                                    <p className="text-sm text-gray-600">{selectedUser.phone || 'Not provided'}</p>
+                                    <p className="text-sm text-gray-600 break-words">{selectedUser.phone || 'Not provided'}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-3">
-                                <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
+                            <div className="flex items-start gap-4">
+                                <MapPin className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-700">Address</p>
-                                    <p className="text-sm text-gray-600">{selectedUser.address || 'Not provided'}</p>
+                                    <p className="text-sm text-gray-600 break-words">{selectedUser.address || 'Not provided'}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-3">
-                                <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
+                            <div className="flex items-start gap-4">
+                                <Calendar className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                                <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-700">Joined</p>
                                     <p className="text-sm text-gray-600">
                                         {new Date(selectedUser.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}, {new Date(selectedUser.createdAt).toLocaleTimeString()}

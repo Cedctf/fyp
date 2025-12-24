@@ -44,6 +44,8 @@
     "dotenv": "^17.2.3",
     "framer-motion": "^12.23.26",
     "gsap": "^3.14.1",
+    "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.2",
     "kepler.gl": "^3.2.3",
     "lucide-react": "^0.556.0",
     "meshline": "^3.3.1",
