@@ -290,7 +290,7 @@ const DengueHeatmap = () => {
         // Format Top Districts
         const topDistricts = Object.entries(districtCounts)
             .sort(([, a], [, b]) => b - a)
-            .slice(0, 4)
+            .slice(0, 3)
             .map(([name, count]) => ({
                 name,
                 cases: Math.round(count),
@@ -588,11 +588,11 @@ const DengueHeatmap = () => {
                 }}
             >
                 {/* Custom Control Panel */}
-                <div className="absolute top-48 left-0 w-full z-10 pointer-events-none">
+                <div className="absolute top-32 left-0 w-full z-10 pointer-events-none">
                     <div className="container mx-auto px-4 flex justify-between items-start pointer-events-none">
 
                         {/* LEFT COLUMN: Copilot & Report */}
-                        <div className="flex flex-col gap-4 w-80 pointer-events-auto">
+                        <div className="flex flex-col gap-4 w-72 pointer-events-auto">
                             {/* WIDGET 1: Risk Intensity */}
                             <div className="bg-white/40 backdrop-blur-[40px] backdrop-saturate-200 p-5 rounded-[24px] shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] border border-white/50 ring-1 ring-white/30 transition-all hover:bg-white/50">
                                 <label className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-2 block">
@@ -701,7 +701,7 @@ const DengueHeatmap = () => {
                         </div>
 
                         {/* RIGHT COLUMN: Data Source & Cases */}
-                        <div className="flex flex-col gap-4 w-80 pointer-events-auto -mt-24">
+                        <div className="flex flex-col gap-4 w-72 pointer-events-auto -mt-8">
                             {/* COMBINED WIDGET: Data Source & Context */}
                             <div className="bg-white/40 backdrop-blur-[40px] backdrop-saturate-200 p-5 rounded-[24px] shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] border border-white/50 ring-1 ring-white/30 transition-all hover:bg-white/50">
                                 {/* Section: Data Source Toggle */}
