@@ -743,7 +743,7 @@ const DengueHeatmap = () => {
                         </div>
 
                         {/* RIGHT COLUMN: Data Source & Cases */}
-                        <div className="flex flex-col gap-4 w-72 pointer-events-auto -mt-8">
+                        <div className="flex flex-col gap-4 w-72 pointer-events-auto -mt-16">
                             {/* COMBINED WIDGET: Data Source & Context */}
                             <div className="bg-white/40 backdrop-blur-[40px] backdrop-saturate-200 p-5 rounded-[24px] shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] border border-white/50 ring-1 ring-white/30 transition-all hover:bg-white/50">
                                 {/* Section: Data Source Toggle */}
@@ -923,13 +923,16 @@ const DengueHeatmap = () => {
 
                             {/* SUBSCRIBE BUTTON */}
                             {session && (
-                                <div className="mt-3">
+                                <div className="-mt-1 relative group">
+                                    {!isSubscribed && (
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-600 to-red-600 rounded-xl blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
+                                    )}
                                     <button
                                         onClick={handleSubscribe}
                                         disabled={isLoadingSubscribe}
-                                        className={`w-full flex items-center justify-center space-x-2 text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-lg ${isSubscribed
-                                            ? 'bg-white/60 text-gray-700 hover:bg-white/80 shadow-gray-200/30'
-                                            : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/30'
+                                        className={`relative w-full flex items-center justify-center space-x-2 text-xs font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-xl transform hover:-translate-y-0.5 ${isSubscribed
+                                            ? 'bg-white/80 backdrop-blur-md text-gray-600 border border-gray-200 hover:bg-white hover:text-red-500 hover:border-red-200'
+                                            : 'bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700 shadow-orange-500/40'
                                             }`}
                                     >
                                         {isLoadingSubscribe ? (
@@ -941,8 +944,8 @@ const DengueHeatmap = () => {
                                             </>
                                         ) : (
                                             <>
-                                                <Bell className="w-4 h-4" />
-                                                <span>Subscribe to Alerts</span>
+                                                <Bell className="w-4 h-4 animate-bounce" />
+                                                <span className="uppercase tracking-wide">Subscribe to Alerts</span>
                                             </>
                                         )}
                                     </button>
