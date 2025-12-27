@@ -3,6 +3,9 @@ import { GoogleMap, LoadScript, HeatmapLayer, Rectangle } from '@react-google-ma
 import Papa from 'papaparse';
 import { motion } from 'framer-motion';
 import { RefreshCw } from 'lucide-react';
+import { useSession } from "next-auth/react";
+import { Bell, BellOff, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import CountUp from './ui/CountUp';
 
 const containerStyle = {
@@ -46,6 +49,9 @@ const pointInPolygon = (point, vs) => {
 };
 
 const DengueHeatmap = () => {
+    const { data: session } = useSession();
+    const [isSubscribed, setIsSubscribed] = useState(false);
+    const [isLoadingSubscribe, setIsLoadingSubscribe] = useState(false);
     const [heatmapData, setHeatmapData] = useState([]); // Predicted (JSON)
     const [historicalData, setHistoricalData] = useState([]); // Historical (CSV)
     const [dataSource, setDataSource] = useState('predicted'); // 'predicted' | 'historical'
@@ -372,6 +378,42 @@ const DengueHeatmap = () => {
             }
         };
     }, [mapInstance, currentPoints, currentOptions, dataSource]);
+
+    // 4.5 Subscription Logic
+    useEffect(() => {
+        if (session) {
+            fetch('/api/user/subscribe')
+                .then(res => {
+                    if (res.ok) return res.json();
+                    throw new Error("Failed to fetch");
+                })
+                .then(data => setIsSubscribed(data.isSubscribed))
+                .catch(err => console.error("Error fetching subscription status:", err));
+        }
+    }, [session]);
+
+    const handleSubscribe = async () => {
+        if (!session) {
+            toast.error("Please sign in to subscribe to alerts.");
+            return;
+        }
+        setIsLoadingSubscribe(true);
+        try {
+            const res = await fetch('/api/user/subscribe', { method: 'POST' });
+            if (res.ok) {
+                const data = await res.json();
+                setIsSubscribed(data.isSubscribed);
+                toast.success(data.isSubscribed ? "Subscribed to alerts!" : "Unsubscribed from alerts!");
+            } else {
+                toast.error("Failed to update subscription.");
+            }
+        } catch (error) {
+            console.error("Error toggling subscription:", error);
+            toast.error("An error occurred. Please try again.");
+        } finally {
+            setIsLoadingSubscribe(false);
+        }
+    };
 
     // 5. PDF Report Generator
     const handleGenerateReport = async () => {
@@ -878,6 +920,34 @@ const DengueHeatmap = () => {
                                     <span>Generate PDF Report</span>
                                 </button>
                             </div>
+
+                            {/* SUBSCRIBE BUTTON */}
+                            {session && (
+                                <div className="mt-3">
+                                    <button
+                                        onClick={handleSubscribe}
+                                        disabled={isLoadingSubscribe}
+                                        className={`w-full flex items-center justify-center space-x-2 text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-lg ${isSubscribed
+                                            ? 'bg-white/60 text-gray-700 hover:bg-white/80 shadow-gray-200/30'
+                                            : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/30'
+                                            }`}
+                                    >
+                                        {isLoadingSubscribe ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : isSubscribed ? (
+                                            <>
+                                                <BellOff className="w-4 h-4" />
+                                                <span>Unsubscribe from Alerts</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Bell className="w-4 h-4" />
+                                                <span>Subscribe to Alerts</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

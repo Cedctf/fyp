@@ -76,8 +76,8 @@ export default async function handler(req, res) {
 
         // 3. Process Each User
         for (const user of users) {
-            // Skip if no email or address
-            if (!user.email || !user.address) continue;
+            // Skip if no email, address, or NOT SUBSCRIBED
+            if (!user.email || !user.address || !user.isSubscribed) continue;
 
             let userLat = user.lat;
             let userLng = user.lng;
