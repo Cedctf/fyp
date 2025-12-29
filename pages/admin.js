@@ -476,12 +476,12 @@ export default function AdminDashboard() {
 
                                         {/* Logs Output */}
                                         {alertResponse && (
-                                            <div className="mt-6 rounded-md bg-gray-900 p-4 overflow-hidden shadow-inner animate-in fade-in slide-in-from-top-2 duration-300">
-                                                <div className="flex justify-between items-center mb-2 border-b border-gray-700 pb-2">
-                                                    <span className="text-green-400 font-mono text-xs font-bold">SYSTEM LOG</span>
-                                                    <span className="text-gray-500 text-[10px] font-mono">{new Date().toLocaleTimeString()}</span>
+                                            <div className="mt-6 rounded-md bg-white p-4 overflow-hidden shadow-inner border border-[rgb(27,55,121)] animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <div className="flex justify-between items-center mb-2 border-b border-[rgb(27,55,121)]/30 pb-2">
+                                                    <span className="text-[rgb(27,55,121)] font-mono text-xs font-bold">SYSTEM LOG</span>
+                                                    <span className="text-[rgb(27,55,121)]/50 text-[10px] font-mono">{new Date().toLocaleTimeString()}</span>
                                                 </div>
-                                                <pre className="text-green-400 font-mono text-xs overflow-x-auto custom-scrollbar">
+                                                <pre className="text-[rgb(27,55,121)] font-mono text-xs overflow-x-auto custom-scrollbar">
                                                     {JSON.stringify(alertResponse, null, 2)}
                                                 </pre>
                                             </div>
