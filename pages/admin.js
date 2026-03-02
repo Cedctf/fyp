@@ -679,7 +679,7 @@ function RiskMonitorTable() {
     useEffect(() => {
         const fetchRiskData = async () => {
             try {
-                const res = await fetch('http://localhost:5000/api/alerts/status');
+                const res = await fetch('http://localhost:5001/api/alerts/status');
                 const data = await res.json();
                 setRiskData(data);
             } catch (err) {
