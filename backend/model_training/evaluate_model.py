@@ -145,6 +145,7 @@ if model_14d:
     sns.barplot(x=feature_imp.values, y=feature_imp.index, palette='viridis')
     plt.title('Top Drivers of Dengue Spread (Feature Importance)')
     plt.xlabel('Impact Score')
+    plt.tight_layout()
     plt.savefig(os.path.join(METRICS_DIR, 'feature_importance.png'))
     plt.close()
     print("✅ Feature Importance Plot Saved")
