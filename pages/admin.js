@@ -452,10 +452,10 @@ export default function AdminDashboard() {
                                         <div className="flex items-center justify-between gap-4">
                                             <div>
                                                 <h2 className="text-xl font-bold text-[rgb(27,55,121)] mb-2">
-                                                    Trigger Email Alerts
+                                                    Trigger SMS Alerts
                                                 </h2>
                                                 <p className="text-[rgb(27,55,121)]/70 text-sm">
-                                                    Manually trigger the backend to scan for high-risk users and send email notifications.
+                                                    Manually trigger the backend to scan for high-risk users and send SMS notifications.
                                                 </p>
                                             </div>
                                             <div className="flex-shrink-0 bg-red-50 border border-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">

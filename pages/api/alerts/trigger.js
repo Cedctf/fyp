@@ -1,5 +1,6 @@
 import { getUsersCollection, getDatabase } from "@/lib/mongodb";
 import { sendEmail } from "@/lib/email";
+import { sendAlertSms } from "@/lib/twilio";
 import fs from 'fs';
 import path from 'path';
 
@@ -71,34 +72,53 @@ export default async function handler(req, res) {
         const users = await usersCollection.find({}).toArray();
 
         let emailsSent = 0;
+        let smsSent = 0;
         let usersUpdated = 0;
         const alertsLog = [];
 
         // 3. Process Each User
         for (const user of users) {
-            // Skip if no email, address, or NOT SUBSCRIBED
-            if (!user.email || !user.address || !user.isSubscribed) continue;
+            // Skip if no subscription
+            if (!user.isSubscribed) {
+                console.log(`Skipping user ${user.email}: not subscribed`);
+                continue;
+            }
+
+            // Skip if no email
+            if (!user.email) {
+                console.log(`Skipping user ${user._id}: no email`);
+                continue;
+            }
+
+            // Check phone verification status
+            const hasVerifiedPhone = user.phone && user.phoneVerified;
 
             let userLat = user.lat;
             let userLng = user.lng;
 
-            // If user doesn't have coordinates, Geocode them
+            // If user doesn't have coordinates, try geocoding from address
             if (!userLat || !userLng) {
-                console.log(`Geocoding address for user: ${user.email}`);
-                const coords = await geocodeAddress(user.address);
+                if (user.address) {
+                    console.log(`Geocoding address for user: ${user.email}`);
+                    const coords = await geocodeAddress(user.address);
 
-                if (coords) {
-                    userLat = coords.lat;
-                    userLng = coords.lng;
+                    if (coords) {
+                        userLat = coords.lat;
+                        userLng = coords.lng;
 
-                    // Update user in DB with new coords (save for future)
-                    await usersCollection.updateOne(
-                        { _id: user._id },
-                        { $set: { lat: userLat, lng: userLng } }
-                    );
-                    usersUpdated++;
+                        // Update user in DB with new coords (save for future)
+                        await usersCollection.updateOne(
+                            { _id: user._id },
+                            { $set: { lat: userLat, lng: userLng } }
+                        );
+                        usersUpdated++;
+                    } else {
+                        console.log(`Skipping user ${user.email}: geocoding failed`);
+                        continue; // Skip if geocoding failed
+                    }
                 } else {
-                    continue; // Skip if geocoding failed
+                    console.log(`Skipping user ${user.email}: no address or coordinates`);
+                    continue; // Skip if no address and no coordinates
                 }
             }
 
@@ -113,7 +133,9 @@ export default async function handler(req, res) {
             });
 
             if (isAtRisk) {
-                // 5. Send Email Alert
+                console.log(`User ${user.email} is in a hotspot area (lat: ${userLat}, lng: ${userLng})`);
+
+                // 5a. Send Email Alert
                 const emailResult = await sendEmail({
                     to: user.email,
                     subject: "⚠️ Dengue Alert: High Risk Detected Near You",
@@ -130,7 +152,7 @@ export default async function handler(req, res) {
                                 <ul style="list-style: none; padding: 0; margin: 0;">
                                     <li style="margin-bottom: 10px;">
                                         <strong>Affected Area:</strong><br>
-                                        ${user.address} (Within ${ALERT_RADIUS}KM)
+                                        ${user.address || 'Your location'} (Within ${ALERT_RADIUS}KM)
                                     </li>
                                     <li style="margin-bottom: 10px;">
                                         <strong>Forecast Horizon:</strong> Next 14 Days
@@ -165,9 +187,34 @@ export default async function handler(req, res) {
 
                 if (emailResult.success) {
                     emailsSent++;
-                    alertsLog.push({ email: user.email, status: 'Sent' });
+                    alertsLog.push({ email: user.email, type: 'email', status: 'Sent' });
                 } else {
-                    alertsLog.push({ email: user.email, status: 'Failed', error: emailResult.error });
+                    alertsLog.push({ email: user.email, type: 'email', status: 'Failed', error: emailResult.error });
+                }
+
+                // 5b. Send SMS Alert (only if phone is verified)
+                if (hasVerifiedPhone) {
+                    try {
+                        console.log("Sending alert SMS to:", user.phone);
+                        await sendAlertSms(
+                            user.phone,
+                            "RM 0.00 DOPEWS-MY dengue alert: hotspot detected near your area. Please take precautions and remove stagnant water."
+                        );
+
+                        // Update last alert sent timestamp
+                        await usersCollection.updateOne(
+                            { _id: user._id },
+                            { $set: { lastAlertSentAt: new Date() } }
+                        );
+
+                        smsSent++;
+                        alertsLog.push({ email: user.email, phone: user.phone, type: 'sms', status: 'Sent' });
+                    } catch (smsError) {
+                        console.error(`SMS alert failed for ${user.phone}:`, smsError.message);
+                        alertsLog.push({ email: user.email, phone: user.phone, type: 'sms', status: 'Failed', error: smsError.message });
+                    }
+                } else {
+                    console.log(`Skipping SMS for ${user.email}: phone not verified (phone: ${user.phone || 'none'}, verified: ${user.phoneVerified || false})`);
                 }
             }
         }
@@ -177,7 +224,8 @@ export default async function handler(req, res) {
             summary: {
                 totalUsersScanned: users.length,
                 usersUpdatedWithCoords: usersUpdated,
-                emailsSent: emailsSent
+                emailsSent: emailsSent,
+                smsSent: smsSent
             },
             logs: alertsLog
         });
