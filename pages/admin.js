@@ -1,12 +1,12 @@
 import Head from "next/head";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import AuditLogsTable from "../components/admin/AuditLogsTable";
 import UserManagementTable from "../components/admin/UserManagementTable";
-import { LayoutDashboard, Users, Shield, Bell, Send } from "lucide-react";
+import { LayoutDashboard, Users, Shield, Bell, Send, UploadCloud, FileText, X } from "lucide-react";
 import ArticleApprovalTable from "../components/admin/ArticleApprovalTable";
 import { Search, ChevronDown, Check, UserPlus } from "lucide-react";
 import {
@@ -48,6 +48,86 @@ export default function AdminDashboard() {
         { value: "newest", label: "Newest First" },
         { value: "oldest", label: "Oldest First" },
     ];
+
+    // Dataset Upload State
+    const [stagedFiles, setStagedFiles] = useState([]);
+    const [uploadedFiles, setUploadedFiles] = useState([]);
+    const [isDragging, setIsDragging] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadPhase, setUploadPhase] = useState('idle'); // 'idle' | 'uploading' | 'done'
+
+    // Fetch persisted uploaded files from server memory on mount
+    const fetchUploadedFiles = useCallback(async () => {
+        try {
+            const res = await fetch('/api/admin/dataset');
+            if (res.ok) {
+                const data = await res.json();
+                setUploadedFiles(data);
+            }
+        } catch (e) {
+            console.error("Failed to fetch uploaded datasets", e);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchUploadedFiles();
+    }, [fetchUploadedFiles]);
+
+    // Upload staged files to server memory
+    const handleUpload = async () => {
+        if (stagedFiles.length === 0) return;
+        setIsUploading(true);
+        setUploadPhase('uploading');
+        try {
+            const fileMeta = stagedFiles.map((f) => ({
+                name: f.name,
+                size: f.size,
+                type: f.type,
+            }));
+            // Run API call and 2s minimum spinner in parallel
+            const [res] = await Promise.all([
+                fetch('/api/admin/dataset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ files: fileMeta }),
+                }),
+                new Promise((resolve) => setTimeout(resolve, 2000)),
+            ]);
+            if (res.ok) {
+                setUploadPhase('done');
+                await fetchUploadedFiles();
+                // Show green tick for 1.5s then clear staged files
+                await new Promise((resolve) => setTimeout(resolve, 1500));
+                setStagedFiles([]);
+                setUploadPhase('idle');
+            }
+        } catch (e) {
+            console.error("Failed to upload datasets", e);
+            setUploadPhase('idle');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    // Delete a single uploaded file from server memory
+    const handleDeleteFile = async (fileId) => {
+        try {
+            await fetch(`/api/admin/dataset?id=${fileId}`, { method: 'DELETE' });
+            await fetchUploadedFiles();
+        } catch (e) {
+            console.error("Failed to delete dataset", e);
+        }
+    };
+
+    // Clear all uploaded files from server memory
+    const handleClearAll = async () => {
+        try {
+            await fetch('/api/admin/dataset?all=true', { method: 'DELETE' });
+            setUploadedFiles([]);
+        } catch (e) {
+            console.error("Failed to clear datasets", e);
+        }
+    };
 
     // Alert Test State
     const [alertLoading, setAlertLoading] = useState(false);
@@ -279,6 +359,23 @@ export default function AdminDashboard() {
                         >
                             Alert System
                             {activeTab === 'alerts' && (
+                                <motion.div
+                                    layoutId="activeTabIndicator"
+                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[rgb(27,55,121)]"
+                                    initial={false}
+                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                />
+                            )}
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('dataset')}
+                            className={`relative flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'dataset'
+                                ? 'text-[rgb(27,55,121)]'
+                                : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Upload Dataset
+                            {activeTab === 'dataset' && (
                                 <motion.div
                                     layoutId="activeTabIndicator"
                                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-[rgb(27,55,121)]"
@@ -665,6 +762,250 @@ export default function AdminDashboard() {
                             selectedCategory={articleCategory}
                             sortBy={articleSort}
                         />
+                    )}
+
+                    {activeTab === 'dataset' && (
+                        <div className="space-y-8">
+                            <div className="bg-white border rounded-xl p-6 shadow-sm">
+                                <div className="flex items-start justify-between mb-6">
+                                    <div>
+                                        <h2 className="text-xl font-bold text-[rgb(27,55,121)] mb-2">
+                                            Upload Dataset
+                                        </h2>
+                                        <p className="text-[rgb(27,55,121)]/70 text-sm">
+                                            Drag and drop your dataset files below, or click to browse. Accepted formats include CSV, JSON, XLSX, and XLS.
+                                        </p>
+                                    </div>
+                                    <div className="flex-shrink-0 bg-blue-50 border border-blue-100 text-[rgb(27,55,121)] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+                                        ADMIN ONLY
+                                    </div>
+                                </div>
+
+                                {/* Drag & Drop Zone */}
+                                <div
+                                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                                    onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                                    onDrop={(e) => {
+                                        e.preventDefault();
+                                        setIsDragging(false);
+                                        const droppedFiles = Array.from(e.dataTransfer.files);
+                                        setStagedFiles((prev) => [...prev, ...droppedFiles]);
+                                    }}
+                                    onClick={() => document.getElementById('dataset-file-input').click()}
+                                    className={`relative border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-300 ${isDragging
+                                        ? 'border-[rgb(27,55,121)] bg-[rgb(27,55,121)]/5 scale-[1.01]'
+                                        : 'border-gray-300 hover:border-[rgb(27,55,121)]/50 hover:bg-gray-50/50'
+                                        }`}
+                                >
+                                    <input
+                                        id="dataset-file-input"
+                                        type="file"
+                                        multiple
+                                        accept=".csv,.json,.xlsx,.xls"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            const selectedFiles = Array.from(e.target.files);
+                                            setStagedFiles((prev) => [...prev, ...selectedFiles]);
+                                            e.target.value = '';
+                                        }}
+                                    />
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors duration-300 ${isDragging ? 'bg-[rgb(27,55,121)]/10' : 'bg-gray-100'
+                                            }`}>
+                                            <UploadCloud className={`w-8 h-8 transition-colors duration-300 ${isDragging ? 'text-[rgb(27,55,121)]' : 'text-gray-400'
+                                                }`} />
+                                        </div>
+                                        <div>
+                                            <p className={`text-sm font-semibold transition-colors duration-300 ${isDragging ? 'text-[rgb(27,55,121)]' : 'text-gray-600'
+                                                }`}>
+                                                {isDragging ? 'Release to add files' : 'Drag & drop files here'}
+                                            </p>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                or <span className="text-[rgb(27,55,121)] font-medium underline underline-offset-2">browse from your computer</span>
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            {['CSV', 'JSON', 'XLSX', 'XLS'].map((format) => (
+                                                <span key={format} className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200">
+                                                    .{format.toLowerCase()}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Staged Files List */}
+                                {stagedFiles.length > 0 && (
+                                    <div className="mt-6 border-t pt-6">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-sm font-bold text-[rgb(27,55,121)]">
+                                                Ready to Upload ({stagedFiles.length} {stagedFiles.length === 1 ? 'file' : 'files'})
+                                            </h3>
+                                            <button
+                                                onClick={() => setStagedFiles([])}
+                                                className="text-xs text-red-500 hover:text-red-700 hover:underline transition-colors"
+                                            >
+                                                Clear All
+                                            </button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {stagedFiles.map((file, idx) => (
+                                                <div
+                                                    key={`staged-${file.name}-${idx}`}
+                                                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-[rgb(27,55,121)]/20 transition-colors group"
+                                                >
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors duration-300 ${uploadPhase === 'done'
+                                                            ? 'bg-green-50 border border-green-200'
+                                                            : 'bg-gray-100 border border-gray-200'
+                                                            }`}>
+                                                            {uploadPhase === 'done' ? (
+                                                                <Check className="w-5 h-5 text-green-500" />
+                                                            ) : uploadPhase === 'uploading' ? (
+                                                                <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                                                                    {[...Array(8)].map((_, i) => {
+                                                                        const angle = (i * 360) / 8;
+                                                                        const rad = (angle * Math.PI) / 180;
+                                                                        const cx = 12 + 8 * Math.cos(rad);
+                                                                        const cy = 12 + 8 * Math.sin(rad);
+                                                                        return (
+                                                                            <circle
+                                                                                key={i}
+                                                                                cx={cx}
+                                                                                cy={cy}
+                                                                                r={1.5}
+                                                                                fill="currentColor"
+                                                                                className="text-gray-400"
+                                                                                style={{ opacity: 0.15 + (i / 8) * 0.85 }}
+                                                                            />
+                                                                        );
+                                                                    })}
+                                                                </svg>
+                                                            ) : (
+                                                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                                                    {[...Array(8)].map((_, i) => {
+                                                                        const angle = (i * 360) / 8;
+                                                                        const rad = (angle * Math.PI) / 180;
+                                                                        const cx = 12 + 8 * Math.cos(rad);
+                                                                        const cy = 12 + 8 * Math.sin(rad);
+                                                                        return (
+                                                                            <circle
+                                                                                key={i}
+                                                                                cx={cx}
+                                                                                cy={cy}
+                                                                                r={1.5}
+                                                                                fill="currentColor"
+                                                                                className="text-gray-400"
+                                                                                style={{ opacity: 0.15 + (i / 8) * 0.85 }}
+                                                                            />
+                                                                        );
+                                                                    })}
+                                                                </svg>
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-medium text-[rgb(27,55,121)] truncate">{file.name}</p>
+                                                            <p className="text-[10px] text-gray-400 font-mono">
+                                                                {(file.size / 1024).toFixed(1)} KB · <span className={`font-semibold ${uploadPhase === 'done' ? 'text-green-500' : 'text-gray-500'}`}>{uploadPhase === 'done' ? 'Uploaded' : 'Pending'}</span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setStagedFiles((prev) => prev.filter((_, i) => i !== idx));
+                                                        }}
+                                                        className="flex-shrink-0 ml-2 p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Upload Button */}
+                                <div className="mt-6 flex items-center justify-end gap-3">
+                                    <button
+                                        disabled={stagedFiles.length === 0 || isUploading}
+                                        onClick={handleUpload}
+                                        className={`flex items-center gap-2 px-6 py-3 rounded-md font-semibold text-sm transition-all duration-200 shadow-lg ${stagedFiles.length > 0 && !isUploading
+                                            ? 'bg-[rgb(27,55,121)] text-white hover:bg-[rgb(20,40,90)] shadow-[rgb(27,55,121)]/10 cursor-pointer'
+                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                                            }`}
+                                    >
+                                        {isUploading ? (
+                                            <>
+                                                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                                </svg>
+                                                Uploading...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <UploadCloud className="w-4 h-4" />
+                                                {stagedFiles.length > 0
+                                                    ? `Upload ${stagedFiles.length} ${stagedFiles.length === 1 ? 'File' : 'Files'}`
+                                                    : 'Upload'}
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Uploaded Files Section */}
+                            {uploadedFiles.length > 0 && (
+                                <div className="bg-white border rounded-xl p-6 shadow-sm">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h2 className="text-xl font-bold text-[rgb(27,55,121)] mb-1">
+                                                Uploaded Files
+                                            </h2>
+                                            <p className="text-[rgb(27,55,121)]/70 text-sm">
+                                                {uploadedFiles.length} {uploadedFiles.length === 1 ? 'file has' : 'files have'} been successfully uploaded.
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={handleClearAll}
+                                            className="text-xs text-red-500 hover:text-red-700 hover:underline transition-colors"
+                                        >
+                                            Clear All
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {uploadedFiles.map((file) => (
+                                            <div
+                                                key={`uploaded-${file.id}`}
+                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-[rgb(27,55,121)]/20 transition-colors group"
+                                            >
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-green-50 border border-green-200 flex items-center justify-center">
+                                                        <Check className="w-5 h-5 text-green-500" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-medium text-[rgb(27,55,121)] truncate">{file.name}</p>
+                                                        <p className="text-[10px] text-gray-400 font-mono">
+                                                            {(file.size / 1024).toFixed(1)} KB · <span className="text-green-600 font-semibold">Uploaded</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteFile(file.id);
+                                                    }}
+                                                    className="flex-shrink-0 ml-2 p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
             </main>
